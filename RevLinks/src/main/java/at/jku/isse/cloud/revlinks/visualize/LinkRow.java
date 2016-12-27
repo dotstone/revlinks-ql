@@ -7,11 +7,13 @@ public class LinkRow {
 	private final SimpleStringProperty source;
 	private final SimpleStringProperty target;
 	private final SimpleStringProperty type;
+	private final SimpleStringProperty link;
 	
-	public LinkRow(String source, String target, String type) {
+	public LinkRow(String source, String target, String type, String link) {
 		this.source = new SimpleStringProperty(source);
 		this.target = new SimpleStringProperty(target);
 		this.type = new SimpleStringProperty(type);
+		this.link = new SimpleStringProperty(link);
 	}
 	
 	public String getSource() {
@@ -36,5 +38,13 @@ public class LinkRow {
 	
 	public void setType(String type) {
 		this.type.set(type);
+	}
+	
+	public String getLink() {
+		return link.get();
+	}
+	
+	public void setLink(String link) {
+		this.link.set(link);
 	}
 }

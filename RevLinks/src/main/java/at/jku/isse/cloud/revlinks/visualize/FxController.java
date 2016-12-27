@@ -36,6 +36,7 @@ public class FxController implements Initializable {
 	@FXML private TableColumn<LinkRow, String> incSourceCol;
 	@FXML private TableColumn<LinkRow, String> incTargetCol;
 	@FXML private TableColumn<LinkRow, String> incTypeCol;
+	@FXML private TableColumn<LinkRow, String> incLinkCol;
 	
 	@FXML private Label labelName;
 	
@@ -61,6 +62,7 @@ public class FxController implements Initializable {
 		incSourceCol.setCellValueFactory(linkRow -> new SimpleStringProperty(linkRow.getValue().getSource()));
 		incTargetCol.setCellValueFactory(linkRow -> new SimpleStringProperty(linkRow.getValue().getTarget()));
 		incTypeCol.setCellValueFactory(linkRow -> new SimpleStringProperty(linkRow.getValue().getType()));
+		incLinkCol.setCellValueFactory(linkRow -> new SimpleStringProperty(linkRow.getValue().getLink()));
         
         outgoingView.setItems(outgoingRows);
 		incomingView.setItems(incomingRows);
@@ -92,13 +94,13 @@ public class FxController implements Initializable {
 		
 		List<Entry<String, Object>> links = linkVisualize.visualizeLinks(id);
 		for(Entry<String, Object> link : links) {
-			outgoingRows.add(new LinkRow("this (id=" + id + ")", getPropertyName((Artifact)link.getValue()), link.getKey()));
+			outgoingRows.add(new LinkRow("this (id=" + id + ")", getPropertyName((Artifact)link.getValue()), link.getKey(), ""));
 		}
 		
 		List<RevLink> revLinks = linkVisualize.visualizeRevLinks(id);
 		for(RevLink link : revLinks) {
 			for(String relName : link.getRelNames()) {
-				incomingRows.add(new LinkRow(getPropertyName(link.getTarget()) + " - " + getPropertyName(link.getTargetModel()), "this (id=" + id + ")", relName));
+				incomingRows.add(new LinkRow(getPropertyName(link.getTarget()) + " - " + getPropertyName(link.getTargetModel()), "this (id=" + id + ")", relName, "id=" + link.getId()));
 			}
 		}
 	}

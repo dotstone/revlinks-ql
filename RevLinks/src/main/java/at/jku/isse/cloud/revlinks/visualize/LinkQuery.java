@@ -65,7 +65,7 @@ public class LinkQuery {
 		return revLinks.stream()
 				.filter(revLink -> getSourceModelIdOrZero(revLink) == sourceModel.getId())
 				.filter(revLink -> getSourceIdOrZero(revLink) == artifact.getId())
-				.map(revLink -> new RevLink(getSource(revLink), getTarget(revLink), getSourceModel(revLink), getTargetModel(revLink), getRelNames(revLink)))
+				.map(revLink -> new RevLink(revLink.getId(), getSource(revLink), getTarget(revLink), getSourceModel(revLink), getTargetModel(revLink), getRelNames(revLink)))
 				.collect(Collectors.toList());
 	}
 	

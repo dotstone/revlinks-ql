@@ -30,9 +30,10 @@
             </TableView>
             <TableView fx:id="incomingView" layoutX="20.0" layoutY="185.0" prefHeight="135.0" prefWidth="523.0">
                <columns>
-                  <TableColumn fx:id="incSourceCol" prefWidth="321.0" text="Source" />
-                  <TableColumn fx:id="incTypeCol" minWidth="0.0" prefWidth="111.0" text="Type" />
-                  <TableColumn fx:id="incTargetCol" minWidth="0.0" prefWidth="90.0" text="Target" />
+                  <TableColumn fx:id="incSourceCol" prefWidth="276.0" text="Source" />
+                  <TableColumn fx:id="incTypeCol" minWidth="0.0" prefWidth="90.0" text="Type" />
+                  <TableColumn fx:id="incTargetCol" minWidth="0.0" prefWidth="92.0" text="Target" />
+                  <TableColumn fx:id="incLinkCol" minWidth="0.0" prefWidth="64.0" text="RevLink" />
                </columns>
             </TableView>
          </children></AnchorPane>
