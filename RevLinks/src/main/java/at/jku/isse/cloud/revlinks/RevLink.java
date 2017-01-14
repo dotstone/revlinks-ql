@@ -3,7 +3,7 @@ package at.jku.isse.cloud.revlinks;
 import at.jku.sea.cloud.Artifact;
 
 public class RevLink {
-	
+
 	private final long id;
 
 	private final Artifact source;

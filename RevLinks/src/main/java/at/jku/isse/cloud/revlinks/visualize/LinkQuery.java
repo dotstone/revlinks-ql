@@ -15,6 +15,7 @@ import at.jku.isse.cloud.artifact.DSRevLink;
 import at.jku.isse.cloud.revlinks.RevLink;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.CollectionArtifact;
+import at.jku.sea.cloud.Project;
 import at.jku.sea.cloud.mmm.MMMTypeProperties;
 
 public class LinkQuery {
@@ -22,7 +23,7 @@ public class LinkQuery {
 	private final DSConnection conn;
 	private final DSClass revLinkModel;
 
-	public LinkQuery(DSConnection conn) {
+	public LinkQuery(DSConnection conn, Project project) {
 		this.conn = requireNonNull(conn);
 		this.revLinkModel = conn.getOrCreateReverseLinkClass();
 	}

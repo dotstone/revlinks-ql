@@ -9,22 +9,34 @@ import java.util.stream.Collectors;
 
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.CollectionArtifact;
+import at.jku.sea.cloud.Package;
+import at.jku.sea.cloud.Project;
 
 public class DSClass {
 	
 	static final String LINK_PROPERTY_NAME = "Links"; 
 	
 	protected final DSConnection conn;
+	protected final Package pkg;
 	
 	protected final Artifact artifact;
 	
-	public DSClass(DSConnection conn, String name) {
+	public DSClass(DSConnection conn, String name, Package pkg) {
 		this.conn = requireNonNull(conn);
-		this.artifact = conn.createNamedArtifact(name);
+		this.pkg = pkg;
+		this.artifact = conn.createNamedArtifact(name, pkg);
 	}
 	
-	public DSClass(DSConnection conn, Artifact artifact) {
+	public DSClass(DSConnection conn, String name, Package pkg, Project project) {
 		this.conn = requireNonNull(conn);
+		this.pkg = pkg;
+		this.artifact = conn.createNamedArtifact(name, pkg);
+		addToProject(project);
+	}
+	
+	public DSClass(DSConnection conn, Artifact artifact, Package pkg) {
+		this.conn = requireNonNull(conn);
+		this.pkg = pkg;
 		this.artifact = requireNonNull(artifact);
 	}
 	
@@ -42,10 +54,10 @@ public class DSClass {
 	
 	public DSClass withLinks(DSLink... links) {
 		Collection<Artifact> linkArtifacts = Arrays.stream(links)
-				.map(link -> new DSLinkArtifact(conn, link))
+				.map(link -> new DSLinkArtifact(conn, link, pkg))
 				.map(artifact -> artifact.artifact)
 				.collect(Collectors.toList());
-		CollectionArtifact linksArtifact = conn.createCollectionArtifact(LINK_PROPERTY_NAME, linkArtifacts);
+		CollectionArtifact linksArtifact = conn.createCollectionArtifact(LINK_PROPERTY_NAME, linkArtifacts, pkg);
 		addProperty(LINK_PROPERTY_NAME, linksArtifact);
 		return this;
 	}
@@ -59,7 +71,11 @@ public class DSClass {
 		return this;
 	}
 	
-	public DSInstance createInstance(String name) {
-		return new DSInstance(conn, conn.createInstance(this.artifact, name));
+	public DSInstance createInstance(String name, Package pkg) {
+		return new DSInstance(conn, conn.createInstance(this.artifact, name, pkg));
+	}
+	
+	public void addToProject(Project project) {
+		conn.addArtifactToProject(this.artifact, project);
 	}
 }

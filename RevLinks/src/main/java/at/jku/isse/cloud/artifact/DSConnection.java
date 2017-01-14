@@ -8,6 +8,7 @@ import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Cloud;
 import at.jku.sea.cloud.CollectionArtifact;
 import at.jku.sea.cloud.Package;
+import at.jku.sea.cloud.Project;
 import at.jku.sea.cloud.Property;
 import at.jku.sea.cloud.Tool;
 import at.jku.sea.cloud.User;
@@ -21,36 +22,62 @@ import at.jku.sea.cloud.rest.client.RestCloud;
 public class DSConnection {
 	
 	private final Workspace ws;
-	private final Package pkg;
 	
-	public DSConnection(String username, String pwd, String workspace, String pkgName) {
+	public DSConnection(String username, String pwd, String workspace) {
 		Cloud cloud = RestCloud.getInstance();
         User user = getOrCreateUser(cloud, username, username, pwd);
-        Tool tool = cloud.createTool("MyTool", "0.1");
+        Tool tool = cloud.createTool("RevLinks", "0.1");
         this.ws = cloud.createWorkspace(user.getOwner(), tool, workspace);
-        this.pkg = ws.createPackage(pkgName);
+	}
+	
+	public Project createProject(String name) {
+		return ws.createProject(name);
+	}
+	
+	public Package getOrCreatePackage(String pkg) {
+		return getOrCreatePackage(pkg, null);
+	}
+	
+	public Package getOrCreatePackage(String pkg, Package parent) {
+		return ws.getPackages().stream()
+				.filter(p -> pkg.equals(p.getPropertyValue("name")))
+				.filter(p -> p.getPackage() == null || parent == null || p.getPackage().getId() == parent.getId())
+				.findAny()
+				.orElseGet(() -> createPackage(pkg, parent));
+	}
+	
+	private Package createPackage(String pkg, Package parent) {
+		if(parent == null) {
+			return ws.createPackage(pkg);
+		} else {
+			return ws.createPackage(parent, pkg);	
+		}
+	}
+	
+	public Collection<Project> getProjects() {
+		return ws.getProjects();
 	}
     
-	public Artifact createNamedArtifact(String name) {
+	public Artifact createNamedArtifact(String name, Package pkg) {
     	Artifact a = MMMTypesFactory.createComplexType(ws, pkg, name, false, false);
         return a;
     }
 	
-	public Artifact createInstance(Artifact model, String name) {
-		return MMMTypesFactory.createComplexTypeInstance(ws, name, model);
+	public Artifact createInstance(Artifact model, String name, Package pkg) {
+		Artifact a = MMMTypesFactory.createComplexTypeInstance(ws, name, model);
+		a.setPackage(ws, pkg);
+		return a;
 	}
 	
 	public Artifact createFeature(String name) {
-		Artifact a = MMMTypesFactory.createFeature(ws, name, null, false, false, false);
-        return a;
+		return MMMTypesFactory.createFeature(ws, name, null, false, false, false);
 	}
 	
 	public Artifact createOperation(String name) {
-		Artifact a = MMMTypesFactory.createOperation(ws, name, null, null, false, false, false);
-        return a;
+		return MMMTypesFactory.createOperation(ws, name, null, null, false, false, false);
 	}
     
-	public <T> CollectionArtifact createCollectionArtifact(String name, Collection<T> vals) {
+	public <T> CollectionArtifact createCollectionArtifact(String name, Collection<T> vals, Package pkg) {
     	CollectionArtifact a = ws.createCollection(false, pkg);
     	addProperty(a, "name", name);
     	a.addElements(ws, vals);
@@ -119,23 +146,29 @@ public class DSConnection {
 	}
 	
 	public DSRevLink getOrCreateReverseLinkClass() {
+		Package pkg = ws.createPackage("RevLinks");
 		try {
-			return getReverseLinkClass();
+			return getReverseLinkClass(pkg);
 		} catch(IllegalStateException e) {
-			return new DSRevLink(this);
+			return new DSRevLink(this, pkg);
 		}
 	}
 	
-	private DSRevLink getReverseLinkClass() {
+	private DSRevLink getReverseLinkClass(Package pkg) {
 		return new DSRevLink(this, 
 				ws.getArtifacts().stream()
 					.filter(this::hasRevLinkName)
 					.findAny()
-					.orElseThrow(() -> new IllegalStateException("Model for reverse links not found!")));
+					.orElseThrow(() -> new IllegalStateException("Model for reverse links not found!")), 
+				pkg);
 	}
 	
 	private boolean hasRevLinkName(Artifact artifact) {
 		Object val = artifact.getPropertyValueOrNull(MMMTypeProperties.NAME);
 		return DSRevLink.REV_LINK_NAME.equals(val);
+	}
+
+	public void addArtifactToProject(Artifact artifact, Project project) {
+		artifact.addToProject(ws, project);
 	}
 }

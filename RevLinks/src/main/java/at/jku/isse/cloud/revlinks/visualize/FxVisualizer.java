@@ -1,6 +1,7 @@
 package at.jku.isse.cloud.revlinks.visualize;
 
 import at.jku.isse.cloud.artifact.DSConnection;
+import at.jku.sea.cloud.Project;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -16,9 +17,10 @@ public class FxVisualizer extends Application {
     
 	@Override
     public void start(Stage primaryStage) {
-		DSConnection conn = new DSConnection("dos", "mepwd", "my workspace", "some other package");
+		DSConnection conn = new DSConnection("dos", "mepwd", "my workspace");
+		Project project = conn.getProjects().iterator().next();
 		
-		LinkQuery linkQuery = new LinkQuery(conn);
+		LinkQuery linkQuery = new LinkQuery(conn, project);
 		try {
 			FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("JFxVisualizer.fxml"));
             Parent root = (Parent)fxmlLoader.load();
