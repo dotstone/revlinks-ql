@@ -36,7 +36,8 @@ public class RevLinkCreation {
 				Artifact target = entry.getKey();
 				Package targetPkg = target.getPackage();
 				if(targetPkg == null) {
-					targetPkg = conn.getOrCreatePackage("Default");
+					// Target artifact doesn't have a package. Skip reverse link creation!
+					continue;
 				}
 				DSClass targetModel = new DSClass(conn, target.getType(), targetPkg);
 				Package rlPkg = conn.getOrCreatePackage(targetPkg.getPropertyValue("name") + "_RL", targetPkg.getPackage());
