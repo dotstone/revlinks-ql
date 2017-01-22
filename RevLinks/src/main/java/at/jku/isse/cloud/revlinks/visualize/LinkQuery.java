@@ -62,7 +62,7 @@ public class LinkQuery {
 	
 	private List<RevLink> visualizeRevLinks(Artifact artifact) {		
 		Artifact sourceModel = artifact.getType();
-		Collection<Artifact> revLinks = conn.getArtifactsOfType(revLinkModel);
+		Collection<Artifact> revLinks = conn.getArtifactsOfType(revLinkModel, artifact.getPackage());
 		return revLinks.stream()
 				.filter(revLink -> getSourceModelIdOrZero(revLink) == sourceModel.getId())
 				.filter(revLink -> getSourceIdOrZero(revLink) == artifact.getId())

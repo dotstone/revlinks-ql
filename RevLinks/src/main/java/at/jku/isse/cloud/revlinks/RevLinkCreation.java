@@ -17,6 +17,8 @@ import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Package;
 
 public class RevLinkCreation {
+	
+	public static final String RL_EXTENSION = "_RL";
 
 	public static void main(String[] args) {
 		DSConnection conn = new DSConnection("dos", "mepwd", "my workspace");
@@ -40,7 +42,7 @@ public class RevLinkCreation {
 					continue;
 				}
 				DSClass targetModel = new DSClass(conn, target.getType(), targetPkg);
-				Package rlPkg = conn.getOrCreatePackage(targetPkg.getPropertyValue("name") + "_RL", targetPkg.getPackage());
+				Package rlPkg = conn.getOrCreatePackage(targetPkg.getPropertyValue("name") + RL_EXTENSION, targetPkg.getPackage());
 				revLink.createRevLink(sourceModel, targetModel, new DSInstance(conn, artifact), new DSInstance(conn, target), rlPkg,
 						entry.getValue().toArray(new String[entry.getValue().size()]));
 				System.out.println("Created RLink: " + artifact.getId() + " -> " + target.getId() + " [" + entry.getValue().stream().collect(Collectors.joining(",")) + "]");

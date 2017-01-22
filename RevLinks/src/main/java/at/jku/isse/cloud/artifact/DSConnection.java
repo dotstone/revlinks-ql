@@ -1,9 +1,11 @@
 package at.jku.isse.cloud.artifact;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import at.jku.isse.cloud.revlinks.RevLinkCreation;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Cloud;
 import at.jku.sea.cloud.CollectionArtifact;
@@ -141,8 +143,23 @@ public class DSConnection {
 		return ws.getArtifacts();
 	}
 
-	public Collection<Artifact> getArtifactsOfType(DSClass type) {
-		return ws.getArtifacts().stream().filter(a -> a.getType().getId() == type.artifact.getId()).collect(Collectors.toList());
+	public Collection<Artifact> getArtifactsOfType(DSClass type, Package parent) {
+		if(parent == null) {
+			// TODO: Get all artifacts without package
+			return Collections.emptyList();
+		}
+		String rlPkgName = parent.getPropertyValue("name").toString() + RevLinkCreation.RL_EXTENSION;
+		// Get package with matching name and parent package
+		Optional<Package> rlPkg = ws.getPackages().stream().filter(pkg -> rlPkgName.equals(pkg.getPropertyValue("name")) && parentsMatch(pkg, parent)).findAny();
+		Collection<Artifact> potentialCandidates = rlPkg.map(pkg -> pkg.getArtifacts()).orElse(Collections.emptyList());
+		return potentialCandidates.stream().filter(a -> a.getType().getId() == type.artifact.getId()).collect(Collectors.toList());
+	}
+	
+	private boolean parentsMatch(Package p1, Package p2) {
+		if(p1.getPackage() == null || p2.getPackage() == null) {
+			return p1.getPackage() == p2.getPackage();
+		}
+		return p1.getPackage().getId() == p2.getPackage().getId();
 	}
 	
 	public DSRevLink getOrCreateReverseLinkClass() {
