@@ -8,11 +8,6 @@ import at.jku.sea.cloud.Package;
 import at.jku.sea.cloud.Project;
 
 public class CarExample {
-	
-	// TODO:
-	/* Package for Car example
-	 * Visualizer: optimize if possible (search only in relevant packages)
-	 */
 
 	public static void main(String[] args) {
 		DSConnection conn = new DSConnection("dos", "mepwd", "my workspace");
