@@ -188,4 +188,13 @@ public class DSConnection {
 	public void addArtifactToProject(Artifact artifact, Project project) {
 		artifact.addToProject(ws, project);
 	}
+
+	public Optional<Package> getPackageFromName(String targetPkg) {
+		for(Package pkg : ws.getPackages()) {
+			if(targetPkg.equals(pkg.getPropertyValue("name"))) {
+				return Optional.of(pkg);
+			}
+		}
+		return Optional.empty();
+	}
 }

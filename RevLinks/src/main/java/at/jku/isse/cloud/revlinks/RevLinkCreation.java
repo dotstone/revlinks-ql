@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Multimap;
@@ -19,35 +20,21 @@ import at.jku.sea.cloud.Package;
 public class RevLinkCreation {
 	
 	public static final String RL_EXTENSION = "_RL";
+	
+	private static DSConnection conn;
+	private static DSRevLink revLink;
 
 	public static void main(String[] args) {
-		DSConnection conn = new DSConnection("dos", "mepwd", "my workspace");
-		DSRevLink revLink = conn.getOrCreateReverseLinkClass();
+		conn = new DSConnection("dos", "mepwd", "my workspace");
+		revLink = conn.getOrCreateReverseLinkClass();
 		
-		for(Artifact artifact : conn.getAllArtifacts()) {
-			DSClass sourceModel = new DSClass(conn, artifact.getType(), artifact.getPackage());
-			Map<String, Object> props = artifact.getAlivePropertiesMap();
-			Multimap<Artifact, String> revLinkRelationNames = Multimaps.newListMultimap(new HashMap<>(), ArrayList::new);
-			for(String key : props.keySet()) {
-				Object val = props.get(key);
-				if(val instanceof Artifact) {
-					revLinkRelationNames.put((Artifact) val, key);
-				}
-			}
-			for(Map.Entry<Artifact, Collection<String>> entry : revLinkRelationNames.asMap().entrySet()) {
-				Artifact target = entry.getKey();
-				Package targetPkg = target.getPackage();
-				if(targetPkg == null) {
-					// Target artifact doesn't have a package. Skip reverse link creation!
-					continue;
-				}
-				DSClass targetModel = new DSClass(conn, target.getType(), targetPkg);
-				Package rlPkg = conn.getOrCreatePackage(targetPkg.getPropertyValue("name") + RL_EXTENSION, targetPkg.getPackage());
-				revLink.createRevLink(sourceModel, targetModel, new DSInstance(conn, artifact), new DSInstance(conn, target), rlPkg,
-						entry.getValue().toArray(new String[entry.getValue().size()]));
-				System.out.println("Created RLink: " + artifact.getId() + " -> " + target.getId() + " [" + entry.getValue().stream().collect(Collectors.joining(",")) + "]");
-			}
-		}
+		Set<String> pkgNames = new PackageSelector().select(name -> conn.getPackageFromName(name) != null);
+		pkgNames.stream()
+				.map(conn::getPackageFromName)
+				.filter(p -> p.isPresent())
+				.map(pkgOpt -> pkgOpt.get())
+				.flatMap(pkg -> pkg.getArtifacts().stream())
+				.forEach(RevLinkCreation::createRevLinksForArtifact);
 		
 		System.out.println("Finished.");
 		
@@ -61,5 +48,30 @@ public class RevLinkCreation {
 		 */
 		
 		conn.commit("");
+	}
+	
+	private static void createRevLinksForArtifact(Artifact artifact) {
+		DSClass sourceModel = new DSClass(conn, artifact.getType(), artifact.getPackage());
+		Map<String, Object> props = artifact.getAlivePropertiesMap();
+		Multimap<Artifact, String> revLinkRelationNames = Multimaps.newListMultimap(new HashMap<>(), ArrayList::new);
+		for(String key : props.keySet()) {
+			Object val = props.get(key);
+			if(val instanceof Artifact) {
+				revLinkRelationNames.put((Artifact) val, key);
+			}
+		}
+		for(Map.Entry<Artifact, Collection<String>> entry : revLinkRelationNames.asMap().entrySet()) {
+			Artifact target = entry.getKey();
+			Package targetPkg = target.getPackage();
+			if(targetPkg == null) {
+				// Target artifact doesn't have a package. Skip reverse link creation!
+				continue;
+			}
+			DSClass targetModel = new DSClass(conn, target.getType(), targetPkg);
+			Package rlPkg = conn.getOrCreatePackage(targetPkg.getPropertyValue("name") + RL_EXTENSION, targetPkg.getPackage());
+			revLink.createRevLink(sourceModel, targetModel, new DSInstance(conn, artifact), new DSInstance(conn, target), rlPkg,
+					entry.getValue().toArray(new String[entry.getValue().size()]));
+			System.out.println("Created RLink: " + artifact.getId() + " -> " + target.getId() + " [" + entry.getValue().stream().collect(Collectors.joining(",")) + "]");
+		}
 	}
 }
