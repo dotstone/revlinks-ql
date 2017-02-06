@@ -62,7 +62,7 @@ public class DSRevLink extends DSClass {
 	 * @param target the target artifact
 	 * @param source the source artifact
 	 * @param instPkg the package that contains the newly created reverse link
-	 * @param types a string array with the names of the links
+	 * @param types the name of the links
 	 */
 	public void createRevLink(DSClass targetModel, DSClass sourceModel, DSInstance target, DSInstance source, Package instPkg, String... types) {
 		String rlName = "[RL] " + hash(target, source);
