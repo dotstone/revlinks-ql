@@ -62,6 +62,11 @@ public class DSClass {
 		return this;
 	}
 	
+	/**
+	 * Adds a property to the artifact.
+	 * @param name the name of the property
+	 * @param val the value of the property
+	 */
 	protected void addProperty(String name, Object val) {
 		conn.addProperty(artifact, name, val);
 	}
@@ -75,6 +80,10 @@ public class DSClass {
 		return new DSInstance(conn, conn.createInstance(this.artifact, name, pkg));
 	}
 	
+	/**
+	 * Adds the artifact to the specified project.
+	 * @param project the specified project
+	 */
 	public void addToProject(Project project) {
 		conn.addArtifactToProject(this.artifact, project);
 	}

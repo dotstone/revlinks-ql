@@ -32,14 +32,31 @@ public class DSConnection {
         this.ws = cloud.createWorkspace(user.getOwner(), tool, workspace);
 	}
 	
+	/**
+	 * Creates and returns a new project.
+	 * @param name the name of the project
+	 * @return the newly created project
+	 */
 	public Project createProject(String name) {
 		return ws.createProject(name);
 	}
 	
+	/**
+	 * Returns the package with the specified name. If it doesn't exist, then a new package is created and returned.
+	 * @param pkg the specified name of the package
+	 * @return the found or newly created package
+	 */
 	public Package getOrCreatePackage(String pkg) {
 		return getOrCreatePackage(pkg, null);
 	}
 	
+	/**
+	 * Returns the package with the specified name. If it doesn't exist, then a new package is created and returned. 
+	 * The parent package can also be specified. 
+	 * @param pkg the specified name of the package
+	 * @param parent the parent package
+	 * @return the found or newly created package
+	 */
 	public Package getOrCreatePackage(String pkg, Package parent) {
 		return ws.getPackages().stream()
 				.filter(p -> pkg.equals(p.getPropertyValue("name")))
@@ -56,25 +73,52 @@ public class DSConnection {
 		}
 	}
 	
+	/**
+	 * Returns the projects of the workspace.
+	 * @return the projects of the workspace
+	 */
 	public Collection<Project> getProjects() {
 		return ws.getProjects();
 	}
     
+	/**
+	 * Creates an artifact with the specified name in a specified package. The type of the artifact is ComplexType.
+	 * @param name the name of the artifact
+	 * @param pkg the package that contains the artifact
+	 * @return the newly created artifact
+	 */
 	public Artifact createNamedArtifact(String name, Package pkg) {
     	Artifact a = MMMTypesFactory.createComplexType(ws, pkg, name, false, false);
         return a;
     }
 	
+	/**
+	 * Creates an instance artifact from the ComplexType artifact.
+	 * @param model the model artifact, which is a ComplexType
+	 * @param name the name of the instance artifact
+	 * @param pkg the package that contains the instance artifact
+	 * @return the newly created instance artifact
+	 */
 	public Artifact createInstance(Artifact model, String name, Package pkg) {
 		Artifact a = MMMTypesFactory.createComplexTypeInstance(ws, name, model);
 		a.setPackage(ws, pkg);
 		return a;
 	}
 	
+	/**
+	 * Creates a feature artifact with the specified name.
+	 * @param name the name of the feature artifact
+	 * @return the newly created feature artifact
+	 */
 	public Artifact createFeature(String name) {
 		return MMMTypesFactory.createFeature(ws, name, null, false, false, false);
 	}
 	
+	/**
+	 * Creates an operation artifact with the specified name.
+	 * @param name the name of the operation artifact
+	 * @return the newly created operation artifact
+	 */
 	public Artifact createOperation(String name) {
 		return MMMTypesFactory.createOperation(ws, name, null, null, false, false, false);
 	}
@@ -86,35 +130,80 @@ public class DSConnection {
     	return a;
     }
 	
+	/**
+	 * Adds a property to the artifact.
+	 * @param artifact the artifact to which the property is added
+	 * @param name the name of the property
+	 * @param val the value of the property
+	 */
 	public void addProperty(Artifact artifact, String name, Object val) {
 		Property prop = artifact.createProperty(ws, name);
         prop.setValue(ws, val);
 	}
 	
+	/**
+	 * Adds a feature artifact to a ComplexType.
+	 * @param complexType the ComplexType artifact
+	 * @param feature the feature artifact
+	 */
 	public void addFeatureToComplexType(Artifact complexType, Artifact feature) {
 		MMMTypesFactory.addFeatureToComplexType(ws, complexType, feature);
 	}
 	
+	/**
+	 * Adds an operation artifact to a ComplexType.
+	 * @param complexType the ComplexType artifact
+	 * @param operation the operation artifact
+	 */
 	public void addOperationToComplexType(Artifact complexType, Artifact operation) {
 		MMMTypesFactory.addOperationToComplexType(ws, complexType, operation);
 	}
 	
+	/**
+	 * Adds an artifact as a super type of a ComplexType.
+	 * @param complexType the ComplexType artifact
+	 * @param superType the super type artifact
+	 */
 	public void addSuperTypeToComplexType(Artifact complexType, Artifact superType) {
 		MMMTypesFactory.addSuperTypeToComplexType(ws, complexType, superType);
 	}
 	
+	/**
+	 * Sets the value of the property. 
+	 * @param artifact the artifact in which the property is contained
+	 * @param name the name of the property
+	 * @param value the value of the property
+	 */
 	public void setArtifactProperty(Artifact artifact, String name, String value) {
 		artifact.setPropertyValue(ws, name, value);
 	}
 	
+	/**
+	 * Sets an artifact as a value of the property.
+	 * @param artifact the artifact in which the property is contained
+	 * @param name the name of the artifact
+	 * @param value the value of the property, which is an artifact
+	 */
 	public void setArtifactProperty(Artifact artifact, String name, Artifact value) {
 		artifact.setPropertyValue(ws, name, value);
 	}
 	
+	/**
+	 * Returns the value of the property with the specified name.
+	 * @param artifact the artifact that contains the property
+	 * @param name the specified name of the property
+	 * @return the value of the property with the specified name
+	 */
 	public Object getArtifactProperty(Artifact artifact, String name) {
 		return artifact.getPropertyValue(name);
 	}
 	
+	/**
+	 * Returns the artifact with the specified id from the workspace.
+	 * If there exists no artifact with the specified id, then an empty optional instance is returned.
+	 * @param id the specified id of the artifact
+	 * @return the artifact with the specified id or an empty optional instance, if no artifact with the specified id exists
+	 */
 	public Optional<Artifact> getArtifactById(long id) {
 		try {
 			return Optional.of(ws.getArtifact(id));
@@ -123,6 +212,10 @@ public class DSConnection {
 		}
 	}
 	
+	/**
+	 * Commits (and publishes) the contents of the workspace.
+	 * @param msg the commit message, can be set to null
+	 */
 	public void commit(String msg) {
 		ws.commitAll(msg);
 	}
@@ -139,6 +232,10 @@ public class DSConnection {
     	}
     }
 
+	/**
+	 * Returns a collection of all currently available Artifacts of the workspace. 
+	 * @return a collection of all currently available Artifacts of the workspace.
+	 */
 	public Collection<Artifact> getAllArtifacts() {
 		return ws.getArtifacts();
 	}
@@ -185,7 +282,28 @@ public class DSConnection {
 		return DSRevLink.REV_LINK_NAME.equals(val);
 	}
 
+	/**
+	 * Adds the artifact to the specified project.
+	 * @param artifact the artifact to be added to the project
+	 * @param project the specified project
+	 */
 	public void addArtifactToProject(Artifact artifact, Project project) {
 		artifact.addToProject(ws, project);
 	}
+
+	/**
+	 * Returns the package with the specified name from the workspace.
+	 * If there exists no package with the specified name, then an empty optional instance is returned.
+	 * @param targetPkg the specified name of the package
+	 * @return the package with the specified name or an empty optional instance, if no package with the specified name exists
+	 */
+	public Optional<Package> getPackageFromName(String targetPkg) {
+		for(Package pkg : ws.getPackages()) {
+			if(targetPkg.equals(pkg.getPropertyValue("name"))) {
+				return Optional.of(pkg);
+			}
+		}
+		return Optional.empty();
+	}
+
 }
