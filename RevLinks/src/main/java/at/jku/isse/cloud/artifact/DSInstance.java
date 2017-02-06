@@ -3,6 +3,11 @@ package at.jku.isse.cloud.artifact;
 import static java.util.Objects.requireNonNull;
 import at.jku.sea.cloud.Artifact;
 
+/**
+ * The DSInstance contains a design space instance artifact. The methods enable to set the values of the properties of the instance artifact.
+ * @author Gabriel Schoerghuber
+ * @author Dominik Steinbinder
+ */
 public class DSInstance {
 	
 	private final DSConnection conn;
@@ -29,7 +34,7 @@ public class DSInstance {
 	
 	/**
 	 * Sets the artifact of the DSInstance object as the value of a link property.
-	 * @param link the DSLink object, which contains the name of the link property
+	 * @param link the DSLink object of the link
 	 * @param target the DSInstance object, which contains the artifact that is set as the value of the link property
 	 */
 	public void setLinkProperty(DSLink link, DSInstance target) {
