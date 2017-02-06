@@ -3,7 +3,7 @@ package at.jku.isse.cloud.artifact;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Represents a link between artifacts in the design space. A link is defined by its name, 
+ * Represents a link between artifacts in the design space. A link is defined by its name,
  * the target artifact (contained in an DSClass object) and the cardinalities between the source and the target.
  * @author Gabriel Schoerghuber
  * @author Dominik Steinbinder

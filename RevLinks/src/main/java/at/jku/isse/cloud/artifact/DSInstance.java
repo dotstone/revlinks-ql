@@ -5,7 +5,7 @@ import at.jku.sea.cloud.Artifact;
 
 /**
  * The DSInstance contains a design space instance artifact. The methods enable to set the values of the properties of the instance artifact.
- * @author Gabriel Schoerghuber
+ * @author Gabriel Schoerghuber 
  * @author Dominik Steinbinder
  */
 public class DSInstance {

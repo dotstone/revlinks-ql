@@ -4,7 +4,7 @@ import at.jku.sea.cloud.Package;
 
 /**
  * Represents the artifact for the link of a DSLink object. The artifact contains 
- * the properties "target", "srcMin", "srcMax", "dstMin" and "dstMax".
+ * the properties "target", "srcMin", "srcMax", "dstMin" and "dstMax". 
  * @author Gabriel Schoerghuber
  * @author Dominik Steinbinder
  */
