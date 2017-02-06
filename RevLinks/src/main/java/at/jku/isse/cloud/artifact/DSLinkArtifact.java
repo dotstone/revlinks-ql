@@ -18,7 +18,7 @@ public class DSLinkArtifact extends DSClass {
 
 	/**
 	 * Creates a new DSLinkArtifact object and an artifact for the link in the Design Space.
-	 * @param conn the design space connection (DSConnection object)
+	 * @param conn the Design Space connection (DSConnection object)
 	 * @param link the DSLink object of the link
 	 * @param pkg the package that contains the newly created artifact
 	 */

@@ -4,7 +4,7 @@ import static java.util.Objects.requireNonNull;
 import at.jku.sea.cloud.Artifact;
 
 /**
- * The DSInstance contains a design space instance artifact. The methods enable to set the values of the properties of the instance artifact.
+ * The DSInstance contains a Design Space instance artifact. The methods enable to set the values of the properties of the instance artifact.
  * @author Gabriel Schoerghuber 
  * @author Dominik Steinbinder
  */
@@ -15,7 +15,7 @@ public class DSInstance {
 
 	/**
 	 * Creates a new DSInstance object. 
-	 * @param conn the design space connection (DSConnection object)
+	 * @param conn the Design Space connection (DSConnection object)
 	 * @param artifact the instance artifact
 	 */
 	public DSInstance(DSConnection conn, Artifact artifact) {
