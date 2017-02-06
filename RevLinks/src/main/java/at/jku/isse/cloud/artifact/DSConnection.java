@@ -21,10 +21,21 @@ import at.jku.sea.cloud.mmm.MMMTypeProperties;
 import at.jku.sea.cloud.mmm.MMMTypesFactory;
 import at.jku.sea.cloud.rest.client.RestCloud;
 
+/**
+ * Represents a connection to the Design Space and provides methods for creating and modifying artifacts in the workspace.
+ * @author Gabriel Schoerghuber
+ * @author Dominik Steinbinder
+ */
 public class DSConnection {
 	
 	private final Workspace ws;
 	
+	/**
+	 * Creates a new DSConnection object, a user (if it doesn't exist), a tool with the name "RevLinks" and a workspace.
+	 * @param username the name of the user
+	 * @param pwd the password of the user
+	 * @param workspace the identifier for the workspace
+	 */
 	public DSConnection(String username, String pwd, String workspace) {
 		Cloud cloud = RestCloud.getInstance();
         User user = getOrCreateUser(cloud, username, username, pwd);
@@ -43,7 +54,7 @@ public class DSConnection {
 	
 	/**
 	 * Returns the package with the specified name. If it doesn't exist, then a new package is created and returned.
-	 * @param pkg the specified name of the package
+	 * @param pkg the name of the package
 	 * @return the found or newly created package
 	 */
 	public Package getOrCreatePackage(String pkg) {
@@ -53,7 +64,7 @@ public class DSConnection {
 	/**
 	 * Returns the package with the specified name. If it doesn't exist, then a new package is created and returned. 
 	 * The parent package can also be specified. 
-	 * @param pkg the specified name of the package
+	 * @param pkg the name of the package
 	 * @param parent the parent package
 	 * @return the found or newly created package
 	 */
@@ -82,7 +93,7 @@ public class DSConnection {
 	}
     
 	/**
-	 * Creates an artifact with the specified name in a specified package. The type of the artifact is ComplexType.
+	 * Creates an artifact with the specified name in the specified package. The type of the artifact is ComplexType.
 	 * @param name the name of the artifact
 	 * @param pkg the package that contains the artifact
 	 * @return the newly created artifact
@@ -123,6 +134,13 @@ public class DSConnection {
 		return MMMTypesFactory.createOperation(ws, name, null, null, false, false, false);
 	}
     
+	/**
+	 * Creates a collection artifact with the specified name in the specified package. 
+	 * @param name the specified name of the collection artifact
+	 * @param vals the values that are added to the collection artifact
+	 * @param pkg the package that contains the newly created collection artifact
+	 * @return the newly created collection artifact
+	 */
 	public <T> CollectionArtifact createCollectionArtifact(String name, Collection<T> vals, Package pkg) {
     	CollectionArtifact a = ws.createCollection(false, pkg);
     	addProperty(a, "name", name);
@@ -259,6 +277,11 @@ public class DSConnection {
 		return p1.getPackage().getId() == p2.getPackage().getId();
 	}
 	
+	/**
+	 * Creates a package for the reverse link model artifact with the name "RevLinks" and returns the reverse link model artifact. 
+	 * If the reverse link model artifact doesn't exist, then it will be created first.
+	 * @return the newly created or existing reverse link model artifact
+	 */
 	public DSRevLink getOrCreateReverseLinkClass() {
 		Package pkg = ws.createPackage("RevLinks");
 		try {
