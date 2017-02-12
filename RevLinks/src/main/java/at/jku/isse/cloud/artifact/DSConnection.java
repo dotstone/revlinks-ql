@@ -53,6 +53,14 @@ public class DSConnection {
 	}
 	
 	/**
+	 * Returns a collection of all visible packages.
+	 * @return the collection of packages
+	 */
+	public Collection<Package> getPackages() {
+		return ws.getPackages();
+	}
+	
+	/**
 	 * Returns the package with the specified name. If it doesn't exist, then a new package is created and returned.
 	 * @param pkg the name of the package
 	 * @return the found or newly created package

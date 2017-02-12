@@ -25,7 +25,7 @@ public class FxVisualizer extends Application {
 			FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("JFxVisualizer.fxml"));
             Parent root = (Parent)fxmlLoader.load();
             FxController controller = fxmlLoader.<FxController>getController();
-            controller.setLinkVisualize(linkQuery);       
+            controller.initInterface(linkQuery, conn);       
             
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);

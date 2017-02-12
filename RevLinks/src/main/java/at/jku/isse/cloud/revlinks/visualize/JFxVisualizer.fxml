@@ -2,33 +2,51 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<SplitPane dividerPositions="0.14824120603015076" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="400.0" prefWidth="554.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.jku.isse.cloud.revlinks.visualize.FxController">
+<SplitPane dividerPositions="0.25, 0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="1109.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.jku.isse.cloud.revlinks.visualize.FxController">
   <items>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="56.0" prefWidth="502.0">
+    <AnchorPane fx:id="packagePane" minHeight="0.0" minWidth="0.0" prefHeight="495.0" prefWidth="257.0">
          <children>
-            <Button fx:id="searchButton" layoutX="149.0" layoutY="16.0" mnemonicParsing="false" text="Search" />
-            <TextField fx:id="idField" layoutX="76.0" layoutY="16.0" prefHeight="25.0" prefWidth="64.0" />
-            <Label layoutX="14.0" layoutY="20.0" text="Artifact ID" />
-            <Label fx:id="labelName" layoutX="433.0" layoutY="20.0" text="No Artifact selected" AnchorPane.rightAnchor="14.0" />
+            <ListView fx:id="packagesView" layoutX="14.0" layoutY="77.0" onKeyReleased="#packageSelectionChanged" onMouseClicked="#packageSelectionChanged" prefHeight="401.0" prefWidth="255.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="7.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="77.0" />
+            <Label layoutX="14.0" layoutY="14.0" text="Packages" />
+            <Button fx:id="createLinksButton" layoutX="160.0" layoutY="10.0" mnemonicParsing="false" onAction="#createRevLinks" text="Create RevLinks" />
+            <TextField fx:id="pkgSearchField" layoutX="111.0" layoutY="45.0" onKeyReleased="#packageSearchFieldChanges" />
+            <Label layoutX="14.0" layoutY="49.0" text="Search" />
          </children></AnchorPane>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="336.0" prefWidth="516.0">
+      <AnchorPane fx:id="linkPane" minHeight="0.0" minWidth="0.0" prefHeight="179.0" prefWidth="1047.0">
          <children>
-            <Label layoutX="20.0" layoutY="14.0" text="Outgoing Links" />
-            <Label layoutX="21.0" layoutY="168.0" text="Incoming Links" />
-            <TableView fx:id="outgoingView" layoutX="20.0" layoutY="31.0" prefHeight="135.0" prefWidth="523.0">
+            <ListView fx:id="linkView" layoutX="7.0" layoutY="84.0" onKeyReleased="#linkSelectionChanged" onMouseClicked="#linkSelectionChanged" prefHeight="394.0" prefWidth="252.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="7.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="84.0" />
+            <Label layoutX="20.0" layoutY="17.0" text="Search" />
+            <TextField fx:id="linkSearchField" layoutX="110.0" layoutY="13.0" onKeyReleased="#fillLinksList" />
+            <MenuButton fx:id="linkTypeButton" layoutX="110.0" layoutY="47.0" mnemonicParsing="false" onAction="#linkTypeSelectionChanged" prefHeight="25.0" prefWidth="149.0" text="MenuButton">
+              <items>
+                <MenuItem mnemonicParsing="false" text="Action 1" />
+                <MenuItem mnemonicParsing="false" text="Action 2" />
+              </items>
+            </MenuButton>
+            <Label layoutX="22.0" layoutY="51.0" text="Link Type" />
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="artifactPane" minHeight="0.0" minWidth="0.0" prefHeight="483.0" prefWidth="547.0">
+         <children>
+            <TableView fx:id="outgoingView" layoutX="14.0" layoutY="113.0" prefHeight="160.0" prefWidth="523.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="13.0">
               <columns>
                 <TableColumn fx:id="sourceCol" prefWidth="108.0" text="Source" />
                   <TableColumn fx:id="typeCol" prefWidth="114.0" text="Type" />
                 <TableColumn fx:id="targetCol" minWidth="0.0" prefWidth="372.0" text="Target" />
               </columns>
             </TableView>
-            <TableView fx:id="incomingView" layoutX="20.0" layoutY="185.0" prefHeight="135.0" prefWidth="523.0">
+            <TableView fx:id="incomingView" layoutX="14.0" layoutY="309.0" prefHeight="160.0" prefWidth="523.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="13.0">
                <columns>
                   <TableColumn fx:id="incSourceCol" prefWidth="276.0" text="Source" />
                   <TableColumn fx:id="incTypeCol" minWidth="0.0" prefWidth="90.0" text="Type" />
@@ -36,6 +54,16 @@
                   <TableColumn fx:id="incLinkCol" minWidth="0.0" prefWidth="64.0" text="RevLink" />
                </columns>
             </TableView>
-         </children></AnchorPane>
+            <Label layoutX="14.0" layoutY="96.0" text="Outgoing Links" />
+            <Label layoutX="15.0" layoutY="292.0" text="Incoming Links" />
+            <RadioButton fx:id="radioSource" layoutX="35.0" layoutY="39.0" mnemonicParsing="false" onAction="#fillSourceLinks" text="Source">
+               <toggleGroup>
+                  <ToggleGroup fx:id="artifactSelection" />
+               </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="radioTarget" layoutX="115.0" layoutY="39.0" mnemonicParsing="false" onAction="#fillTargetLinks" text="Target" toggleGroup="$artifactSelection" />
+            <Label layoutX="15.0" layoutY="14.0" text="Artifact" />
+         </children>
+      </AnchorPane>
   </items>
 </SplitPane>
