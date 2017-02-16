@@ -67,6 +67,8 @@ public class FxController implements Initializable {
 	
 	private ObservableList<LinkRow> outgoingRows;
 	private ObservableList<LinkRow> incomingRows;
+	
+	private static final String RL_EXTENSION = "_RL";
 
 	@Override
 	public void initialize(URL url, ResourceBundle bundle) {
@@ -100,6 +102,7 @@ public class FxController implements Initializable {
 		this.connection = requireNonNull(conn);
 		
 		this.packages = connection.getPackages();
+		
 		fillPackagesList();
 		this.linkPane.setDisable(true);
 		this.artifactPane.setDisable(true);
@@ -110,7 +113,7 @@ public class FxController implements Initializable {
 	private void fillPackagesList() {
 		this.packagesView.getItems().clear();
 		this.packagesView.getItems().addAll(packages.stream()
-				.map(this::getPropertyName)
+				.map(p -> getPropertyName(p, true))
 				.filter(name -> name.toLowerCase().contains(this.pkgSearchField.getText().toLowerCase()))
 				.collect(Collectors.toList()));
 	}
@@ -127,9 +130,11 @@ public class FxController implements Initializable {
 	 */
 	public void packageSelectionChanged() {		
 		if(reverseLinksExist()) {
+			this.createLinksButton.setDisable(true);
 			enableLinkPane();
 		} else {
 			this.createLinksButton.setDisable(false);
+			// TODO more disabling (e.g. linkPane and maybe other panes)
 		}
 	}
 	
@@ -138,8 +143,9 @@ public class FxController implements Initializable {
 		if(selectedPkg == null) {
 			return false;
 		}
-		// TODO check if reverse links package exists (or some other method to check?)
-		return true;
+		
+		return this.packages.stream()
+				.anyMatch(p -> getPropertyName(p, false).equals(getPropertyName(selectedPkg, false) + RL_EXTENSION));
 	}
 	
 	/**
@@ -171,7 +177,8 @@ public class FxController implements Initializable {
 	 * Called when the according button was clicked.
 	 */
 	public void createRevLinks() {
-		this.createLinksButton.setDisable(true);
+		//this.createLinksButton.setDisable(true);
+		
 		// TODO create rev links (optionally, check if revlinks weren't created before)
 		
 		enableLinkPane();
@@ -232,13 +239,13 @@ public class FxController implements Initializable {
 		
 		List<Entry<String, Object>> links = linkQuery.visualizeLinks(id);
 		for(Entry<String, Object> link : links) {
-			outgoingRows.add(new LinkRow("this (id=" + id + ")", getPropertyName((Artifact)link.getValue()), link.getKey(), ""));
+			outgoingRows.add(new LinkRow("this (id=" + id + ")", getPropertyName((Artifact)link.getValue(), true), link.getKey(), ""));
 		}
 		
 		List<RevLink> revLinks = linkQuery.visualizeRevLinks(id);
 		for(RevLink link : revLinks) {
 			for(String relName : link.getRelNames()) {
-				incomingRows.add(new LinkRow(getPropertyName(link.getTarget()) + " - " + getPropertyName(link.getTargetModel()), "this (id=" + id + ")", relName, "id=" + link.getId()));
+				incomingRows.add(new LinkRow(getPropertyName(link.getTarget(), true) + " - " + getPropertyName(link.getTargetModel(), true), "this (id=" + id + ")", relName, "id=" + link.getId()));
 			}
 		}
 	}
@@ -250,12 +257,12 @@ public class FxController implements Initializable {
 			return null;
 		}
 		return this.packages.stream()
-				.filter(p -> pkgName.equals(getPropertyName(p)))
+				.filter(p -> pkgName.equals(getPropertyName(p, true)))
 				.findAny()
 				.orElseThrow(() -> new IllegalStateException("Selected a package that doesn't exist!"));
 	}
 
-	private String getPropertyName(Artifact link) {
+	private String getPropertyName(Artifact link, Boolean appendID) {
 		Object name = link.getPropertyValueOrNull("name");
 		if(name == null) {
 			name = link.getPropertyValueOrNull(MMMTypeProperties.NAME);
@@ -263,6 +270,8 @@ public class FxController implements Initializable {
 				name = "<Unknown>";
 			}
 		}
-		return name.toString() + " (" + link.getId() + ")";
+		
+		return appendID ? name.toString() + " (" + link.getId() + ")" : name.toString();
 	}
+	
 }
