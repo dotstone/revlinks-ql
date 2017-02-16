@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import at.jku.isse.cloud.artifact.DSConnection;
 import at.jku.isse.cloud.revlinks.RevLink;
+import at.jku.isse.cloud.revlinks.RevLinkCreation;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Package;
 import at.jku.sea.cloud.mmm.MMMTypeProperties;
@@ -67,8 +68,6 @@ public class FxController implements Initializable {
 	
 	private ObservableList<LinkRow> outgoingRows;
 	private ObservableList<LinkRow> incomingRows;
-	
-	private static final String RL_EXTENSION = "_RL";
 
 	@Override
 	public void initialize(URL url, ResourceBundle bundle) {
@@ -145,7 +144,7 @@ public class FxController implements Initializable {
 		}
 		
 		return this.packages.stream()
-				.anyMatch(p -> getPropertyName(p, false).equals(getPropertyName(selectedPkg, false) + RL_EXTENSION));
+				.anyMatch(p -> getPropertyName(p, false).equals(getPropertyName(selectedPkg, false) + RevLinkCreation.RL_EXTENSION));
 	}
 	
 	/**
@@ -180,7 +179,6 @@ public class FxController implements Initializable {
 		//this.createLinksButton.setDisable(true);
 		
 		// TODO create rev links (optionally, check if revlinks weren't created before)
-		
 		enableLinkPane();
 		this.linkSearchField.requestFocus();
 	}
