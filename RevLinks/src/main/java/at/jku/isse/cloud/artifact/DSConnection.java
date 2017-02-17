@@ -39,7 +39,7 @@ public class DSConnection {
 	public DSConnection(String username, String pwd, String workspace) {
 		Cloud cloud = RestCloud.getInstance();
         User user = getOrCreateUser(cloud, username, username, pwd);
-        Tool tool = cloud.createTool("RevLinks", "0.1");
+        Tool tool = getOrCreateTool(cloud, "RevLinks", "0.1");
         this.ws = cloud.createWorkspace(user.getOwner(), tool, workspace);
 	}
 	
@@ -90,6 +90,12 @@ public class DSConnection {
 		} else {
 			return ws.createPackage(parent, pkg);	
 		}
+	}
+	
+	private Tool getOrCreateTool(Cloud cloud, String name, String toolVersion) {
+		return cloud.getTools().stream()
+				.filter(t -> t.getName().equals(name) && t.getToolVersion().equals(toolVersion))
+				.findAny().orElseGet(() -> cloud.createTool(name, toolVersion));
 	}
 	
 	/**
@@ -286,12 +292,12 @@ public class DSConnection {
 	}
 	
 	/**
-	 * Creates a package for the reverse link model artifact with the name "RevLinks" and returns the reverse link model artifact. 
-	 * If the reverse link model artifact doesn't exist, then it will be created first.
+	 * Gets the package for the reverse link model artifact with the name "RevLinks" and returns the reverse link model artifact. 
+	 * If the reverse link model artifact or/and the package don't exist, then they will be created first.
 	 * @return the newly created or existing reverse link model artifact
 	 */
 	public DSRevLink getOrCreateReverseLinkClass() {
-		Package pkg = ws.createPackage("RevLinks");
+		Package pkg = getOrCreatePackage("RevLinks");
 		try {
 			return getReverseLinkClass(pkg);
 		} catch(IllegalStateException e) {

@@ -5,16 +5,25 @@ import static java.util.Objects.requireNonNull;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+
+import at.jku.isse.cloud.artifact.DSClass;
 import at.jku.isse.cloud.artifact.DSConnection;
+import at.jku.isse.cloud.artifact.DSInstance;
+import at.jku.isse.cloud.artifact.DSRevLink;
 import at.jku.isse.cloud.revlinks.RevLink;
 import at.jku.isse.cloud.revlinks.RevLinkCreation;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Package;
+import at.jku.sea.cloud.exceptions.WorkspaceEmptyException;
 import at.jku.sea.cloud.mmm.MMMTypeProperties;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -62,6 +71,7 @@ public class FxController implements Initializable {
 	@FXML private TableColumn<LinkRow, String> incLinkCol;
 	
 	private DSConnection connection;
+	private DSRevLink revLink;
 	private LinkQuery linkQuery;
 	
 	private Collection<Package> packages;
@@ -99,6 +109,7 @@ public class FxController implements Initializable {
 	public void initInterface(LinkQuery linkVisualize, DSConnection conn) {
 		this.linkQuery = requireNonNull(linkVisualize);
 		this.connection = requireNonNull(conn);
+		this.revLink = connection.getOrCreateReverseLinkClass();
 		
 		this.packages = connection.getPackages();
 		
@@ -131,6 +142,9 @@ public class FxController implements Initializable {
 		if(reverseLinksExist()) {
 			this.createLinksButton.setDisable(true);
 			enableLinkPane();
+		} else if (getPropertyName(getCurrentlySelectedPackage(), false).endsWith(RevLinkCreation.RL_EXTENSION)) { 
+			// selected package is a reverse link package
+			this.createLinksButton.setDisable(true);
 		} else {
 			this.createLinksButton.setDisable(false);
 			// TODO more disabling (e.g. linkPane and maybe other panes)
@@ -176,9 +190,26 @@ public class FxController implements Initializable {
 	 * Called when the according button was clicked.
 	 */
 	public void createRevLinks() {
-		//this.createLinksButton.setDisable(true);
+		this.createLinksButton.setDisable(true);
+
+		Package selectedPkg = getCurrentlySelectedPackage();
+		if(selectedPkg == null) {
+			return;
+		}
 		
-		// TODO create rev links (optionally, check if revlinks weren't created before)
+		selectedPkg.getArtifacts().stream().
+				forEach(a -> RevLinkCreation.createRevLinksForArtifact(a, this.connection, this.revLink));
+		
+		try {
+			connection.commit("");
+		} catch (WorkspaceEmptyException e) {
+			System.err.println("There is nothing to commit because no reverse links were created.");
+		}
+		
+		packages = connection.getPackages();
+		fillPackagesList();
+		this.packagesView.getSelectionModel().select(getPropertyName(selectedPkg, true));
+		
 		enableLinkPane();
 		this.linkSearchField.requestFocus();
 	}
