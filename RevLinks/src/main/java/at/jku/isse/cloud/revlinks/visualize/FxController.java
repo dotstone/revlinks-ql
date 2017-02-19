@@ -291,16 +291,8 @@ public class FxController implements Initializable {
 				.orElseThrow(() -> new IllegalStateException("Selected a package that doesn't exist!"));
 	}
 
-	private String getPropertyName(Artifact link) {
-		Object name = link.getPropertyValueOrNull("name");
-		if(name == null) {
-			name = link.getPropertyValueOrNull(MMMTypeProperties.NAME);
-			if(name == null) {
-				name = "<Unknown>";
-			}
-		}
-		
-		return name.toString() + " (" + link.getId() + ")";
+	private String getPropertyName(Artifact link) {		
+		return linkQuery.getArtifactName(link) + " (" + link.getId() + ")";
 	}
 	
 }
