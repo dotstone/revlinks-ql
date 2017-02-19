@@ -123,7 +123,7 @@ public class FxController implements Initializable {
 	private void fillPackagesList() {
 		this.packagesView.getItems().clear();
 		this.packagesView.getItems().addAll(packages.stream()
-				.map(p -> getPropertyName(p, true))
+				.map(this::getPropertyName)
 				.filter(name -> name.toLowerCase().contains(this.pkgSearchField.getText().toLowerCase()))
 				.collect(Collectors.toList()));
 	}
@@ -142,7 +142,7 @@ public class FxController implements Initializable {
 		if(reverseLinksExist()) {
 			this.createLinksButton.setDisable(true);
 			enableLinkPane();
-		} else if (getPropertyName(getCurrentlySelectedPackage(), false).endsWith(RevLinkCreation.RL_EXTENSION)) { 
+		} else if (linkQuery.getArtifactName(getCurrentlySelectedPackage()).endsWith(RevLinkCreation.RL_EXTENSION)) { 
 			// selected package is a reverse link package
 			this.createLinksButton.setDisable(true);
 		} else {
@@ -158,7 +158,7 @@ public class FxController implements Initializable {
 		}
 		
 		return this.packages.stream()
-				.anyMatch(p -> getPropertyName(p, false).equals(getPropertyName(selectedPkg, false) + RevLinkCreation.RL_EXTENSION));
+				.anyMatch(p -> linkQuery.getArtifactName(p).equals(linkQuery.getArtifactName(selectedPkg) + RevLinkCreation.RL_EXTENSION));
 	}
 	
 	/**
@@ -208,7 +208,7 @@ public class FxController implements Initializable {
 		
 		packages = connection.getPackages();
 		fillPackagesList();
-		this.packagesView.getSelectionModel().select(getPropertyName(selectedPkg, true));
+		this.packagesView.getSelectionModel().select(getPropertyName(selectedPkg));
 		
 		enableLinkPane();
 		this.linkSearchField.requestFocus();
@@ -268,13 +268,13 @@ public class FxController implements Initializable {
 		
 		List<Entry<String, Object>> links = linkQuery.visualizeLinks(id);
 		for(Entry<String, Object> link : links) {
-			outgoingRows.add(new LinkRow("this (id=" + id + ")", getPropertyName((Artifact)link.getValue(), true), link.getKey(), ""));
+			outgoingRows.add(new LinkRow("this (id=" + id + ")", getPropertyName((Artifact)link.getValue()), link.getKey(), ""));
 		}
 		
 		List<RevLink> revLinks = linkQuery.visualizeRevLinks(id);
 		for(RevLink link : revLinks) {
 			for(String relName : link.getRelNames()) {
-				incomingRows.add(new LinkRow(getPropertyName(link.getTarget(), true) + " - " + getPropertyName(link.getTargetModel(), true), "this (id=" + id + ")", relName, "id=" + link.getId()));
+				incomingRows.add(new LinkRow(getPropertyName(link.getTarget()) + " - " + getPropertyName(link.getTargetModel()), "this (id=" + id + ")", relName, "id=" + link.getId()));
 			}
 		}
 	}
@@ -286,12 +286,12 @@ public class FxController implements Initializable {
 			return null;
 		}
 		return this.packages.stream()
-				.filter(p -> pkgName.equals(getPropertyName(p, true)))
+				.filter(p -> pkgName.equals(getPropertyName(p)))
 				.findAny()
 				.orElseThrow(() -> new IllegalStateException("Selected a package that doesn't exist!"));
 	}
 
-	private String getPropertyName(Artifact link, Boolean appendID) {
+	private String getPropertyName(Artifact link) {
 		Object name = link.getPropertyValueOrNull("name");
 		if(name == null) {
 			name = link.getPropertyValueOrNull(MMMTypeProperties.NAME);
@@ -300,7 +300,7 @@ public class FxController implements Initializable {
 			}
 		}
 		
-		return appendID ? name.toString() + " (" + link.getId() + ")" : name.toString();
+		return name.toString() + " (" + link.getId() + ")";
 	}
 	
 }

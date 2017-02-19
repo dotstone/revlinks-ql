@@ -33,7 +33,7 @@ public class LinkQuery {
 		return artifact.map(this::getArtifactName).orElse("Artifact does not exist");
 	}
 	
-	private String getArtifactName(Artifact artifact) {
+	public String getArtifactName(Artifact artifact) {
 		Object name = artifact.getPropertyValueOrNull(MMMTypeProperties.NAME);
 		if(name == null) {
 			name = artifact.getPropertyValueOrNull("name");
