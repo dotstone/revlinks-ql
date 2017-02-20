@@ -9,7 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Multimap;
@@ -29,6 +32,8 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -118,6 +123,7 @@ public class FxController implements Initializable {
 		this.artifactPane.setDisable(true);
 		this.radioSource.setSelected(true);
 		this.createLinksButton.setDisable(true);
+		this.linkTypeButton.setText("");
 	}
 	
 	private void fillPackagesList() {
@@ -165,11 +171,27 @@ public class FxController implements Initializable {
 	 * Called when either the reverse links have been created or if a package was selected that had its links already created.
 	 */
 	private void enableLinkPane() {		
-		List<String> linkTypes = new ArrayList<>(); // TODO retrieve link types
-		
 		this.linkTypeButton.getItems().clear();
-		for(String linkType : linkTypes) {
-			this.linkTypeButton.getItems().add(0, new MenuItem(linkType));
+		
+		Map<Long, List<Artifact>> rlArtifacts = linkQuery.getRevLinkArtifacts(getCurrentlySelectedPackage());
+		
+		for(Entry<Long, List<Artifact>> rlArtifactGroup: rlArtifacts.entrySet()) {
+	
+			String sourceModelName = linkQuery.getName(rlArtifactGroup.getKey());
+			List<Long> rlTargetModelIds = rlArtifactGroup.getValue().stream()
+													.map(a -> linkQuery.getTargetModel(a).getId())
+													.distinct()
+													.collect(Collectors.toList());
+			
+			for(Long id : rlTargetModelIds) {
+				MenuItem item = new MenuItem(sourceModelName + " (" + rlArtifactGroup.getKey() + ")" + " --> " + linkQuery.getName(id) + " (" + id + ")");
+				item.setOnAction(new EventHandler<ActionEvent>() {
+		            public void handle(ActionEvent t) {
+		                linkTypeSelectionChanged(item.getText());
+		            }
+		        });
+				this.linkTypeButton.getItems().add(item);
+			}
 		}
 		
 		fillLinkList();
@@ -178,13 +200,13 @@ public class FxController implements Initializable {
 	
 	private void fillLinkList() {
 		List<String> links = new ArrayList<>();		// TODO retrieve links
-		
+				
 		this.linkView.getItems().clear();
-		for(String link : links) {
+    	for(String link : links) {
 			// TODO check if link matches link type filter
 			this.linkView.getItems().add(link);
-		}
-	}
+		} 
+ 	}
 	
 	/**
 	 * Called when the according button was clicked.
@@ -219,6 +241,14 @@ public class FxController implements Initializable {
 	 */
 	public void linkTypeSelectionChanged() {
 		fillLinkList();
+	}
+	
+	private void linkTypeSelectionChanged(String linkType) {
+		Pattern p = Pattern.compile("[\\D]*\\((\\d*)\\) --> [\\D]*\\((\\d*)\\)");
+		Matcher m = p.matcher(linkType);
+		m.matches();
+		long sourceModelId = Long.parseLong(m.group(1));
+		long targetModelId = Long.parseLong(m.group(2));
 	}
 	
 	/**
