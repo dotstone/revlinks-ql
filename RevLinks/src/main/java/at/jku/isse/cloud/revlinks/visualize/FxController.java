@@ -80,6 +80,7 @@ public class FxController implements Initializable {
 	private LinkQuery linkQuery;
 	
 	private Collection<Package> packages;
+	private Map<Artifact, List<RevLink>> rlArtifacts;
 	
 	private ObservableList<LinkRow> outgoingRows;
 	private ObservableList<LinkRow> incomingRows;
@@ -123,7 +124,7 @@ public class FxController implements Initializable {
 		this.artifactPane.setDisable(true);
 		this.radioSource.setSelected(true);
 		this.createLinksButton.setDisable(true);
-		this.linkTypeButton.setText("");
+		this.linkTypeButton.setText("show all");
 	}
 	
 	private void fillPackagesList() {
@@ -173,21 +174,31 @@ public class FxController implements Initializable {
 	private void enableLinkPane() {		
 		this.linkTypeButton.getItems().clear();
 		
-		Map<Long, List<Artifact>> rlArtifacts = linkQuery.getRevLinkArtifacts(getCurrentlySelectedPackage());
+		// dropdown menu entry for displaying all rev links
+		MenuItem itemAll = new MenuItem("show all");
+		itemAll.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent t) {
+                fillLinkList();
+                linkTypeButton.setText(itemAll.getText());
+            }
+        });
+		this.linkTypeButton.getItems().add(itemAll);
 		
-		for(Entry<Long, List<Artifact>> rlArtifactGroup: rlArtifacts.entrySet()) {
+		rlArtifacts = linkQuery.getRevLinks(getCurrentlySelectedPackage());
+		for(Entry<Artifact, List<RevLink>> rlArtifactGroup: rlArtifacts.entrySet()) {
 	
-			String sourceModelName = linkQuery.getName(rlArtifactGroup.getKey());
+			String sourceModelName = linkQuery.getName(rlArtifactGroup.getKey().getId());
 			List<Long> rlTargetModelIds = rlArtifactGroup.getValue().stream()
-													.map(a -> linkQuery.getTargetModel(a).getId())
+													.map(a -> a.getTargetModel().getId())
 													.distinct()
 													.collect(Collectors.toList());
 			
 			for(Long id : rlTargetModelIds) {
-				MenuItem item = new MenuItem(sourceModelName + " (" + rlArtifactGroup.getKey() + ")" + " --> " + linkQuery.getName(id) + " (" + id + ")");
+				MenuItem item = new MenuItem(sourceModelName + " (" + rlArtifactGroup.getKey().getId() + ")" + " --> " + linkQuery.getName(id) + " (" + id + ")");
 				item.setOnAction(new EventHandler<ActionEvent>() {
 		            public void handle(ActionEvent t) {
 		                linkTypeSelectionChanged(item.getText());
+		                linkTypeButton.setText(item.getText());
 		            }
 		        });
 				this.linkTypeButton.getItems().add(item);
@@ -198,15 +209,43 @@ public class FxController implements Initializable {
 		this.linkPane.setDisable(false);
 	}
 	
-	private void fillLinkList() {
-		List<String> links = new ArrayList<>();		// TODO retrieve links
-				
+	private void fillLinkList() {				
 		this.linkView.getItems().clear();
-    	for(String link : links) {
-			// TODO check if link matches link type filter
-			this.linkView.getItems().add(link);
-		} 
+		
+		for(Entry<Artifact, List<RevLink>> rlGroup : rlArtifacts.entrySet()) {
+			String sourceModelName = linkQuery.getName(rlGroup.getKey().getId());
+			
+			rlGroup.getValue().stream().forEach(rl -> addRevLinkToLinkView(rl, sourceModelName, linkQuery.getName(rl.getTargetModel().getId())));
+		}
  	}
+	
+	private void fillLinkList(long sourceModelId, long targetModelId) {
+		this.linkView.getItems().clear();
+		
+		Optional<Artifact> sourceModel = rlArtifacts.keySet().stream().
+											filter(rl -> rl.getId() == sourceModelId).findFirst();
+		if(sourceModel.equals(Optional.empty())) {
+			return;
+		}
+		
+		List<RevLink> revLinks = rlArtifacts.get(sourceModel.get()).stream()
+											.filter(rl -> rl.getTargetModel().getId() == targetModelId)
+											.collect(Collectors.toList());
+		
+		String sourceModelName = linkQuery.getName(sourceModelId);
+		String targetModelName = linkQuery.getName(targetModelId);
+		
+		revLinks.stream().forEach(rl -> addRevLinkToLinkView(rl, sourceModelName, targetModelName));
+	}
+	
+	private void addRevLinkToLinkView(RevLink rl, String sourceModelName, String targetModelName) {
+		this.linkView.getItems().add(sourceModelName + ": " + 
+				linkQuery.getArtifactName(rl.getSource()) + 
+				" ("+rl.getSource().getId() + ") --> " +
+				targetModelName + ": " +
+				linkQuery.getArtifactName(rl.getTarget()) +
+				" ("+rl.getTarget().getId() + ")");
+	}
 	
 	/**
 	 * Called when the according button was clicked.
@@ -249,6 +288,7 @@ public class FxController implements Initializable {
 		m.matches();
 		long sourceModelId = Long.parseLong(m.group(1));
 		long targetModelId = Long.parseLong(m.group(2));
+		fillLinkList(sourceModelId, targetModelId);
 	}
 	
 	/**

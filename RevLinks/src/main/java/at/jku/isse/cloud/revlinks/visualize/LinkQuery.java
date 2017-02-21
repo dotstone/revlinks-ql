@@ -4,7 +4,6 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +13,6 @@ import at.jku.isse.cloud.artifact.DSClass;
 import at.jku.isse.cloud.artifact.DSConnection;
 import at.jku.isse.cloud.artifact.DSRevLink;
 import at.jku.isse.cloud.revlinks.RevLink;
-import at.jku.isse.cloud.revlinks.RevLinkCreation;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.CollectionArtifact;
 import at.jku.sea.cloud.Package;
@@ -73,10 +71,11 @@ public class LinkQuery {
 				.collect(Collectors.toList());
 	}
 	
-	public Map<Long, List<Artifact>> getRevLinkArtifacts(Package pkg) {		
+	public Map<Artifact, List<RevLink>> getRevLinks(Package pkg) {		
 		Collection<Artifact> rlArtifacts = conn.getArtifactsOfType(revLinkModel, pkg);
 		return rlArtifacts.stream()
-				.collect(Collectors.groupingBy(this::getSourceModelIdOrZero));
+				.map(revLink -> new RevLink(revLink.getId(), getSource(revLink), getTarget(revLink), getSourceModel(revLink), getTargetModel(revLink), getRelNames(revLink)))
+				.collect(Collectors.groupingBy(RevLink::getSourceModel));
 
 	}
 	
@@ -108,7 +107,7 @@ public class LinkQuery {
 		return getArtifactByProperty(revLink, DSRevLink.TARGET_NAME);
 	}
 	
-	public Artifact getTargetModel(Artifact revLink) {
+	private Artifact getTargetModel(Artifact revLink) {
 		return getArtifactByProperty(revLink, DSRevLink.TARGET_MODEL_NAME);
 	}
 	
