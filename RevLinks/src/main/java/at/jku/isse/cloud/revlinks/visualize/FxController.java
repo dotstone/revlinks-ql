@@ -154,7 +154,8 @@ public class FxController implements Initializable {
 			this.createLinksButton.setDisable(true);
 		} else {
 			this.createLinksButton.setDisable(false);
-			// TODO more disabling (e.g. linkPane and maybe other panes)
+			this.linkPane.setDisable(true);
+			this.artifactPane.setDisable(true);
 		}
 	}
 	
@@ -194,7 +195,8 @@ public class FxController implements Initializable {
 													.collect(Collectors.toList());
 			
 			for(Long id : rlTargetModelIds) {
-				MenuItem item = new MenuItem(sourceModelName + " (" + rlArtifactGroup.getKey().getId() + ")" + " --> " + linkQuery.getName(id) + " (" + id + ")");
+				MenuItem item = new MenuItem(sourceModelName + " (" + rlArtifactGroup.getKey().getId() + ")" + 
+															" --> " + linkQuery.getName(id) + " (" + id + ")");
 				item.setOnAction(new EventHandler<ActionEvent>() {
 		            public void handle(ActionEvent t) {
 		                linkTypeSelectionChanged(item.getText());
