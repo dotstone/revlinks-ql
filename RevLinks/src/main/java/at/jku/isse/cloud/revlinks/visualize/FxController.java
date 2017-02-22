@@ -84,6 +84,8 @@ public class FxController implements Initializable {
 	
 	private ObservableList<LinkRow> outgoingRows;
 	private ObservableList<LinkRow> incomingRows;
+	
+	private static String LINK_REGEX = "[^\\n\\r]*\\((\\d*)\\) --> [^\\n\\r]*\\((\\d*)\\)";
 
 	@Override
 	public void initialize(URL url, ResourceBundle bundle) {
@@ -124,7 +126,6 @@ public class FxController implements Initializable {
 		this.artifactPane.setDisable(true);
 		this.radioSource.setSelected(true);
 		this.createLinksButton.setDisable(true);
-		this.linkTypeButton.setText("show all");
 	}
 	
 	private void fillPackagesList() {
@@ -146,6 +147,10 @@ public class FxController implements Initializable {
 	 * Called when an element in the package ListView gets selected
 	 */
 	public void packageSelectionChanged() {		
+		this.artifactPane.setDisable(true);
+		this.incomingRows.clear();
+		this.outgoingRows.clear();
+		
 		if(reverseLinksExist()) {
 			this.createLinksButton.setDisable(true);
 			enableLinkPane();
@@ -155,7 +160,6 @@ public class FxController implements Initializable {
 		} else {
 			this.createLinksButton.setDisable(false);
 			this.linkPane.setDisable(true);
-			this.artifactPane.setDisable(true);
 		}
 	}
 	
@@ -174,6 +178,7 @@ public class FxController implements Initializable {
 	 */
 	private void enableLinkPane() {		
 		this.linkTypeButton.getItems().clear();
+		this.linkTypeButton.setText("show all");
 		
 		// dropdown menu entry for displaying all rev links
 		MenuItem itemAll = new MenuItem("show all");
@@ -285,7 +290,7 @@ public class FxController implements Initializable {
 	}
 	
 	private void linkTypeSelectionChanged(String linkType) {
-		Pattern p = Pattern.compile("[\\D]*\\((\\d*)\\) --> [\\D]*\\((\\d*)\\)");
+		Pattern p = Pattern.compile(LINK_REGEX);
 		Matcher m = p.matcher(linkType);
 		m.matches();
 		long sourceModelId = Long.parseLong(m.group(1));
@@ -298,6 +303,11 @@ public class FxController implements Initializable {
 	 */
 	public void linkSelectionChanged() {
 		this.artifactPane.setDisable(false);
+		if(this.radioSource.isSelected()) {
+			fillSourceLinks();
+		} else {
+			fillTargetLinks();
+		}
 	}
 	
 	/**
@@ -316,27 +326,28 @@ public class FxController implements Initializable {
 	 * Called when radio button "Source" was clicked
 	 */
 	public void fillSourceLinks() {
-		// TODO (use/adapt fillLinks())
+		long sourceId = Long.parseLong(getLinkMatcher().group(1));
+		fillLinks(sourceId);
 	}
 	
 	/**
 	 * Called when radio button "Target" was clicked
 	 */
 	public void fillTargetLinks() {
-		// TODO (use/adapt fillLinks())
+		long targetId = Long.parseLong(getLinkMatcher().group(2));
+		fillLinks(targetId);
 	}
 	
-	private void fillLinks() {
+	private Matcher getLinkMatcher() {
+		Pattern p = Pattern.compile(LINK_REGEX);
+		Matcher m = p.matcher(this.linkView.getSelectionModel().getSelectedItem());
+		m.matches();
+		return m;
+	}
+	
+	private void fillLinks(long id) {
 		outgoingRows.clear();
 		incomingRows.clear();
-		
-		long id;
-		try {
-			id = Integer.parseInt(linkSearchField.getText());
-		} catch(NumberFormatException e) {
-			System.err.println("Not a number: " + linkSearchField.getText());
-			return;
-		}
 		
 		List<Entry<String, Object>> links = linkQuery.visualizeLinks(id);
 		for(Entry<String, Object> link : links) {
