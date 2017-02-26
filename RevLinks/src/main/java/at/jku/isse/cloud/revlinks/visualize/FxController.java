@@ -3,31 +3,24 @@ package at.jku.isse.cloud.revlinks.visualize;
 import static java.util.Objects.requireNonNull;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-
-import at.jku.isse.cloud.artifact.DSClass;
 import at.jku.isse.cloud.artifact.DSConnection;
-import at.jku.isse.cloud.artifact.DSInstance;
 import at.jku.isse.cloud.artifact.DSRevLink;
 import at.jku.isse.cloud.revlinks.RevLink;
 import at.jku.isse.cloud.revlinks.RevLinkCreation;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Package;
+import at.jku.sea.cloud.Property;
 import at.jku.sea.cloud.exceptions.WorkspaceEmptyException;
-import at.jku.sea.cloud.mmm.MMMTypeProperties;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -85,7 +78,7 @@ public class FxController implements Initializable {
 	private ObservableList<LinkRow> outgoingRows;
 	private ObservableList<LinkRow> incomingRows;
 	
-	private static String LINK_REGEX = "[^\\n\\r]*\\((\\d*)\\) --> [^\\n\\r]*\\((\\d*)\\)";
+	private static final Pattern LINK_PATTERN = Pattern.compile("[^\\n\\r]*\\((\\d*)\\) --> [^\\n\\r]*\\((\\d*)\\)");
 
 	@Override
 	public void initialize(URL url, ResourceBundle bundle) {
@@ -151,6 +144,13 @@ public class FxController implements Initializable {
 		this.incomingRows.clear();
 		this.outgoingRows.clear();
 		
+		Package currentlySelected = getCurrentlySelectedPackage();
+		if(currentlySelected == null) {
+			this.createLinksButton.setDisable(true);
+			this.linkPane.setDisable(true);
+			return;
+		}
+		
 		if(reverseLinksExist()) {
 			this.createLinksButton.setDisable(true);
 			enableLinkPane();
@@ -184,8 +184,8 @@ public class FxController implements Initializable {
 		MenuItem itemAll = new MenuItem("show all");
 		itemAll.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent t) {
-                fillLinkList();
-                linkTypeButton.setText(itemAll.getText());
+            	fillLinkListNoFilter();
+            	linkTypeButton.setText(itemAll.getText());
             }
         });
 		this.linkTypeButton.getItems().add(itemAll);
@@ -194,58 +194,70 @@ public class FxController implements Initializable {
 		for(Entry<Artifact, List<RevLink>> rlArtifactGroup: rlArtifacts.entrySet()) {
 	
 			String sourceModelName = linkQuery.getName(rlArtifactGroup.getKey().getId());
-			List<Long> rlTargetModelIds = rlArtifactGroup.getValue().stream()
-													.map(a -> a.getTargetModel().getId())
-													.distinct()
-													.collect(Collectors.toList());
 			
-			for(Long id : rlTargetModelIds) {
-				MenuItem item = new MenuItem(sourceModelName + " (" + rlArtifactGroup.getKey().getId() + ")" + 
-															" --> " + linkQuery.getName(id) + " (" + id + ")");
-				item.setOnAction(new EventHandler<ActionEvent>() {
-		            public void handle(ActionEvent t) {
-		                linkTypeSelectionChanged(item.getText());
-		                linkTypeButton.setText(item.getText());
-		            }
-		        });
-				this.linkTypeButton.getItems().add(item);
+			for(RevLink rl : rlArtifactGroup.getValue()) {
+				for(String relation : rl.getRelNames()) {
+					String itemText = relation + ": " + sourceModelName + " (" + rlArtifactGroup.getKey().getId() + ")" + 
+							" --> " + linkQuery.getName(rl.getTargetModel().getId()) + " (" + rl.getTargetModel().getId() + ")";
+					if(this.linkTypeButton.getItems().stream().filter(item -> item.getText().equals(itemText)).findAny().isPresent()) {
+						// This link is already in the list
+						continue;
+					}
+					MenuItem item = new MenuItem(itemText);
+					item.setMnemonicParsing(false);
+					item.setOnAction(new EventHandler<ActionEvent>() {
+						public void handle(ActionEvent t) {
+							fillLinkList(item.getText());
+							linkTypeButton.setText(item.getText());
+						}
+					});
+					this.linkTypeButton.getItems().add(item);
+				}
 			}
 		}
 		
-		fillLinkList();
+		fillLinkListNoFilter();
 		this.linkPane.setDisable(false);
 	}
 	
-	private void fillLinkList() {				
+	private void fillLinkList() {
+		if(this.linkTypeButton.getText().equals("show all")) {
+			fillLinkListNoFilter();
+		} else {
+			fillLinkList(this.linkTypeButton.getText());
+		}
+	}
+	
+	private void fillLinkListNoFilter() {
+		fillLinkList(s -> true, rl -> true);
+	}
+	
+	private void fillLinkList(String linkType) {
+		Matcher m = LINK_PATTERN.matcher(linkType);
+		m.matches();
+		long sourceModelId = Long.parseLong(m.group(1));
+		long targetModelId = Long.parseLong(m.group(2));
+		fillLinkList(source -> source.getId() == sourceModelId, rl -> rl.getTargetModel().getId() == targetModelId);
+ 	}
+	
+	private void fillLinkList(Predicate<Artifact> sourcePredicate, Predicate<RevLink> linkPredicate) {
 		this.linkView.getItems().clear();
 		
 		for(Entry<Artifact, List<RevLink>> rlGroup : rlArtifacts.entrySet()) {
 			String sourceModelName = linkQuery.getName(rlGroup.getKey().getId());
+			if(sourcePredicate.test(rlGroup.getKey())) {
+				rlGroup.getValue().stream()
+						.filter(linkPredicate)
+						.forEach(rl -> addRevLinkToLinkView(rl, sourceModelName, linkQuery.getName(rl.getTargetModel().getId())));
+			}
 			
-			rlGroup.getValue().stream().forEach(rl -> addRevLinkToLinkView(rl, sourceModelName, linkQuery.getName(rl.getTargetModel().getId())));
 		}
- 	}
-	
-	private void fillLinkList(long sourceModelId, long targetModelId) {
-		this.linkView.getItems().clear();
-		
-		Optional<Artifact> sourceModel = rlArtifacts.keySet().stream().
-											filter(rl -> rl.getId() == sourceModelId).findFirst();
-		if(sourceModel.equals(Optional.empty())) {
-			return;
-		}
-		
-		List<RevLink> revLinks = rlArtifacts.get(sourceModel.get()).stream()
-											.filter(rl -> rl.getTargetModel().getId() == targetModelId)
-											.collect(Collectors.toList());
-		
-		String sourceModelName = linkQuery.getName(sourceModelId);
-		String targetModelName = linkQuery.getName(targetModelId);
-		
-		revLinks.stream().forEach(rl -> addRevLinkToLinkView(rl, sourceModelName, targetModelName));
 	}
 	
 	private void addRevLinkToLinkView(RevLink rl, String sourceModelName, String targetModelName) {
+		if(!matchesSearchText(rl)) {
+			return;
+		}
 		this.linkView.getItems().add(sourceModelName + ": " + 
 				linkQuery.getArtifactName(rl.getSource()) + 
 				" ("+rl.getSource().getId() + ") --> " +
@@ -254,6 +266,38 @@ public class FxController implements Initializable {
 				" ("+rl.getTarget().getId() + ")");
 	}
 	
+	private boolean matchesSearchText(RevLink rl) {
+		return hasAttributeMatching(rl.getSource(), this.linkSearchField.getText()) || 
+				hasAttributeMatching(rl.getTarget(), this.linkSearchField.getText());
+	}
+
+	private boolean hasAttributeMatching(Artifact target, String text) {
+		if(text == null || text.equals("")) {
+			return true;
+		}
+		text = text.toLowerCase();
+		boolean isNumber = text.matches("\\d+");
+		if(isNumber && target.getId() == Integer.parseInt(text)) {
+			return true;
+		}
+		for(Property property : target.getAliveProperties()) {
+			Object value = property.getValue();
+			if(value instanceof String) {
+				if(((String)value).toLowerCase().contains(text)) {
+					return true;
+				}
+			}
+			if(isNumber) {
+				if(value instanceof Number) {
+					if(text.equals(String.valueOf(value))) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Called when the according button was clicked.
 	 */
@@ -289,15 +333,6 @@ public class FxController implements Initializable {
 		fillLinkList();
 	}
 	
-	private void linkTypeSelectionChanged(String linkType) {
-		Pattern p = Pattern.compile(LINK_REGEX);
-		Matcher m = p.matcher(linkType);
-		m.matches();
-		long sourceModelId = Long.parseLong(m.group(1));
-		long targetModelId = Long.parseLong(m.group(2));
-		fillLinkList(sourceModelId, targetModelId);
-	}
-	
 	/**
 	 * Called when an element in the links ListView gets selected
 	 */
@@ -313,34 +348,32 @@ public class FxController implements Initializable {
 	/**
 	 * Called when pane is enabled or when the search field text in the links pane changes.
 	 */
-	public void fillLinksList() {
-		Package pkg = getCurrentlySelectedPackage();
-		if(pkg == null) {
-			return;
-		}
-		// TODO retrieve all links and reverse links in the selected package and fill out links list.
-		this.linkView.getItems().add("Sample Link");
+	public void searchTextChanged() {
+		fillLinkList();
 	}
 	
 	/**
 	 * Called when radio button "Source" was clicked
 	 */
 	public void fillSourceLinks() {
-		long sourceId = Long.parseLong(getLinkMatcher().group(1));
-		fillLinks(sourceId);
+		if(this.linkView.getSelectionModel().getSelectedItem() != null) {
+			long sourceId = Long.parseLong(getLinkMatcher().group(1));
+			fillLinks(sourceId);
+		}
 	}
 	
 	/**
 	 * Called when radio button "Target" was clicked
 	 */
 	public void fillTargetLinks() {
-		long targetId = Long.parseLong(getLinkMatcher().group(2));
-		fillLinks(targetId);
+		if(this.linkView.getSelectionModel().getSelectedItem() != null) {
+			long targetId = Long.parseLong(getLinkMatcher().group(2));
+			fillLinks(targetId);
+		}
 	}
 	
 	private Matcher getLinkMatcher() {
-		Pattern p = Pattern.compile(LINK_REGEX);
-		Matcher m = p.matcher(this.linkView.getSelectionModel().getSelectedItem());
+		Matcher m = LINK_PATTERN.matcher(this.linkView.getSelectionModel().getSelectedItem());
 		m.matches();
 		return m;
 	}
@@ -377,5 +410,4 @@ public class FxController implements Initializable {
 	private String getPropertyName(Artifact link) {		
 		return linkQuery.getArtifactName(link) + " (" + link.getId() + ")";
 	}
-	
 }

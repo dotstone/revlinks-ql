@@ -13,7 +13,7 @@
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<SplitPane dividerPositions="0.25, 0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="1109.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.jku.isse.cloud.revlinks.visualize.FxController">
+<SplitPane dividerPositions="0.25, 0.6" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="1109.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.jku.isse.cloud.revlinks.visualize.FxController">
   <items>
     <AnchorPane fx:id="packagePane" minHeight="0.0" minWidth="0.0" prefHeight="495.0" prefWidth="257.0">
          <children>
@@ -23,11 +23,11 @@
             <TextField fx:id="pkgSearchField" layoutX="111.0" layoutY="45.0" onKeyReleased="#packageSearchFieldChanges" />
             <Label layoutX="14.0" layoutY="49.0" text="Search" />
          </children></AnchorPane>
-      <AnchorPane fx:id="linkPane" minHeight="0.0" minWidth="0.0" prefHeight="179.0" prefWidth="1047.0">
+      <AnchorPane fx:id="linkPane" minHeight="0.0" minWidth="0.0" prefHeight="483.0" prefWidth="286.0">
          <children>
             <ListView fx:id="linkView" layoutX="7.0" layoutY="84.0" onKeyReleased="#linkSelectionChanged" onMouseClicked="#linkSelectionChanged" prefHeight="394.0" prefWidth="252.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="7.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="84.0" />
             <Label layoutX="20.0" layoutY="17.0" text="Search" />
-            <TextField fx:id="linkSearchField" layoutX="110.0" layoutY="13.0" onKeyReleased="#fillLinksList" />
+            <TextField fx:id="linkSearchField" layoutX="110.0" layoutY="13.0" onKeyReleased="#searchTextChanged" />
             <MenuButton fx:id="linkTypeButton" layoutX="110.0" layoutY="47.0" mnemonicParsing="false" onAction="#linkTypeSelectionChanged" prefHeight="25.0" prefWidth="149.0" text="MenuButton">
               <items>
                 <MenuItem mnemonicParsing="false" text="Action 1" />
@@ -37,21 +37,21 @@
             <Label layoutX="22.0" layoutY="51.0" text="Link Type" />
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="artifactPane" minHeight="0.0" minWidth="0.0" prefHeight="483.0" prefWidth="547.0">
+      <AnchorPane fx:id="artifactPane" minHeight="0.0" minWidth="0.0" prefHeight="483.0" prefWidth="495.0">
          <children>
-            <TableView fx:id="outgoingView" layoutX="14.0" layoutY="113.0" prefHeight="160.0" prefWidth="523.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="13.0">
+            <TableView fx:id="outgoingView" layoutX="15.0" layoutY="113.0" prefHeight="160.0" prefWidth="413.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="12.0">
               <columns>
-                <TableColumn fx:id="sourceCol" prefWidth="108.0" text="Source" />
-                  <TableColumn fx:id="typeCol" prefWidth="114.0" text="Type" />
-                <TableColumn fx:id="targetCol" minWidth="0.0" prefWidth="372.0" text="Target" />
+                <TableColumn fx:id="sourceCol" prefWidth="117.0" text="Source" />
+                  <TableColumn fx:id="typeCol" prefWidth="91.0" text="Type" />
+                <TableColumn fx:id="targetCol" minWidth="0.0" prefWidth="202.0" text="Target" />
               </columns>
             </TableView>
             <TableView fx:id="incomingView" layoutX="14.0" layoutY="309.0" prefHeight="160.0" prefWidth="523.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="13.0">
                <columns>
-                  <TableColumn fx:id="incSourceCol" prefWidth="276.0" text="Source" />
+                  <TableColumn fx:id="incSourceCol" prefWidth="169.0" text="Source" />
                   <TableColumn fx:id="incTypeCol" minWidth="0.0" prefWidth="90.0" text="Type" />
-                  <TableColumn fx:id="incTargetCol" minWidth="0.0" prefWidth="92.0" text="Target" />
-                  <TableColumn fx:id="incLinkCol" minWidth="0.0" prefWidth="64.0" text="RevLink" />
+                  <TableColumn fx:id="incTargetCol" minWidth="0.0" prefWidth="84.0" text="Target" />
+                  <TableColumn fx:id="incLinkCol" minWidth="0.0" prefWidth="69.0" text="RevLink" />
                </columns>
             </TableView>
             <Label layoutX="14.0" layoutY="96.0" text="Outgoing Links" />
