@@ -11,13 +11,26 @@ import javafx.stage.Stage;
 
 public class FxVisualizer extends Application {
 	
+	private static final String DEFAULT_USER = "RL User";
+	private static final String DEFAULT_PASSWORD = "default password";
+	private static final String DEFAULT_WORKSPACE = "RL workspace";
+
+	private static String[] arguments;
+	
     public static void main(String[] args) {
+    	arguments = args;
         launch(args);
     }
     
 	@Override
-    public void start(Stage primaryStage) {
-		DSConnection conn = new DSConnection("dos", "mepwd", "my workspace");
+    public void start(Stage primaryStage) {		
+		DSConnection conn;
+		if(arguments != null && arguments.length == 4) {
+			conn = new DSConnection(arguments[0], arguments[1], Integer.parseInt(arguments[2]), arguments[3]);
+		} else {
+			conn = new DSConnection(DEFAULT_USER, DEFAULT_PASSWORD, DEFAULT_WORKSPACE);
+		}
+		
 		Project project = conn.getProjects().iterator().next();
 		
 		LinkQuery linkQuery = new LinkQuery(conn, project);

@@ -34,8 +34,16 @@ public class DSConnection {
 	 * Creates a new DSConnection object, a user (if it doesn't exist), a tool with the name "RevLinks" and a workspace.
 	 * @param username the name of the user
 	 * @param pwd the password of the user
+	 * @param toolId Artifact ID of the tool.
 	 * @param workspace the identifier for the workspace
 	 */
+	public DSConnection(String username, String pwd, int toolId, String workspace) {
+		Cloud cloud = RestCloud.getInstance();
+        User user = getOrCreateUser(cloud, username, username, pwd);
+        Tool tool = cloud.getTool(toolId);
+        this.ws = cloud.createWorkspace(user.getOwner(), tool, workspace);
+	}
+	
 	public DSConnection(String username, String pwd, String workspace) {
 		Cloud cloud = RestCloud.getInstance();
         User user = getOrCreateUser(cloud, username, username, pwd);

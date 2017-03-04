@@ -37,17 +37,34 @@ public class CarExample {
 		DSClass carModel = new DSClass(conn, "Car", uml, project).withLinks(hasColor, brand, interiorColor, hasEngine, hasTransmission);
 		
 		// Instantiate
+		
+		// Colors
 		DSInstance black = colorModel.createInstance("Black", instances);
 		black.setProperty("colorName", "black");
+		DSInstance blue = colorModel.createInstance("Blue", instances);
+		blue.setProperty("colorName", "blue");
+		DSInstance grey = colorModel.createInstance("Grey", instances);
+		grey.setProperty("colorName", "grey");
+		
+		// Brands
 		DSInstance honda = brandModel.createInstance("Honda", instances);
 		honda.setProperty("brandName", "Honda");
 		DSInstance renault = brandModel.createInstance("Renault", instances);
 		renault.setProperty("brandName", "Renault");
+		DSInstance bmw = brandModel.createInstance("BMW", instances);
+		bmw.setProperty("brandName", "BMW");
+		DSInstance porsche = brandModel.createInstance("Porsche", instances);
+		porsche.setProperty("brandName", "Porsche");
+		
+		// Countries
 		DSInstance japan = countryModel.createInstance("Japan", instances);
 		japan.setProperty("name", "Japan");
 		DSInstance france = countryModel.createInstance("France", instances);
 		france.setProperty("name", "France");
+		DSInstance germany = countryModel.createInstance("Germany", instances);
+		germany.setProperty("name", "Germany");
 		
+		// Engines
 		DSInstance diesel = dieselModel.createInstance("2.2 i-DTEC", instances);
 		diesel.setProperty("power", "150");
 		diesel.setProperty("displacement", "2199");
@@ -58,13 +75,32 @@ public class CarExample {
 		petrol.setProperty("displacement", "1998");
 		petrol.setProperty("cylinders", "4");
 		petrol.setProperty("torque", "191");
+		DSInstance bmwDiesel = dieselModel.createInstance("525D", instances);
+		bmwDiesel.setProperty("power", "177");
+		bmwDiesel.setProperty("displacement", "2497");
+		bmwDiesel.setProperty("cylinders", "6");
+		bmwDiesel.setProperty("torque", "400");
+		DSInstance porschePetrol = petrolModel.createInstance("911 S Turbo", instances);
+		bmwDiesel.setProperty("power", "580");
+		bmwDiesel.setProperty("displacement", "3800");
+		bmwDiesel.setProperty("cylinders", "6");
+		bmwDiesel.setProperty("torque", "700");
 		
+		// Transmissions
 		DSInstance hondaTransmission = automaticModel.createInstance("Honda Automatic", instances);
 		DSInstance renaultTransmission = manualModel.createInstance("Renault Manual", instances);
 		renaultTransmission.setProperty("gears", "5");
+		DSInstance bmwTransmission = manualModel.createInstance("BMW Manual", instances);
+		bmwTransmission.setProperty("gears", "6");
+		DSInstance porscheTransmission = manualModel.createInstance("Porsche Manual", instances);
+		porscheTransmission.setProperty("gears", "7");
 		
+		// Cars
 		DSInstance blackHonda = carModel.createInstance("My black Honda", instances);
 		DSInstance blackRenault = carModel.createInstance("My black Renault", instances);
+		DSInstance blueHonda = carModel.createInstance("My blue Honda", instances);
+		DSInstance greyBmw = carModel.createInstance("My grey BMW", instances);
+		DSInstance myPorsche = carModel.createInstance("My Porsche", instances);
 		
 		// Create Links
 		blackHonda.setLinkProperty(hasColor, black);
@@ -72,15 +108,36 @@ public class CarExample {
 		blackHonda.setLinkProperty(interiorColor, black);
 		blackHonda.setLinkProperty(hasEngine, diesel);
 		blackHonda.setLinkProperty(hasTransmission, hondaTransmission);
-		honda.setLinkProperty(brandOrigin, japan);
 		
 		blackRenault.setLinkProperty(hasColor, black);
 		blackRenault.setLinkProperty(brand, renault);
 		blackRenault.setLinkProperty(interiorColor, black);
 		blackRenault.setLinkProperty(hasEngine, petrol);
 		blackRenault.setLinkProperty(hasTransmission, renaultTransmission);
+		
+		blueHonda.setLinkProperty(hasColor, blue);
+		blueHonda.setLinkProperty(brand, honda);
+		blueHonda.setLinkProperty(interiorColor, grey);
+		blueHonda.setLinkProperty(hasEngine, diesel);
+		blueHonda.setLinkProperty(hasTransmission, hondaTransmission);
+		
+		greyBmw.setLinkProperty(hasColor, grey);
+		greyBmw.setLinkProperty(brand, bmw);
+		greyBmw.setLinkProperty(interiorColor, grey);
+		greyBmw.setLinkProperty(hasEngine, bmwDiesel);
+		greyBmw.setLinkProperty(hasTransmission, bmwTransmission);
+		
+		myPorsche.setLinkProperty(hasColor, grey);
+		myPorsche.setLinkProperty(brand, porsche);
+		myPorsche.setLinkProperty(interiorColor, black);
+		myPorsche.setLinkProperty(hasEngine, porschePetrol);
+		myPorsche.setLinkProperty(hasTransmission, porscheTransmission);
+		
+		honda.setLinkProperty(brandOrigin, japan);
 		renault.setLinkProperty(brandOrigin, france);
-
+		bmw.setLinkProperty(brandOrigin, germany);
+		porsche.setLinkProperty(brandOrigin, germany);
+		
 		System.out.println("Finished!");
 		conn.commit("");
 	}
