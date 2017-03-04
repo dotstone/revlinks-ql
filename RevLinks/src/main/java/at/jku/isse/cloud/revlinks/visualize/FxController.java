@@ -20,7 +20,6 @@ import at.jku.isse.cloud.revlinks.RevLinkCreation;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Package;
 import at.jku.sea.cloud.Property;
-import at.jku.sea.cloud.exceptions.WorkspaceEmptyException;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -309,14 +308,10 @@ public class FxController implements Initializable {
 			return;
 		}
 		
-		selectedPkg.getArtifacts().stream().
-				forEach(a -> RevLinkCreation.createRevLinksForArtifact(a, this.connection, this.revLink));
-		
-		try {
-			connection.commit("");
-		} catch (WorkspaceEmptyException e) {
-			System.err.println("There is nothing to commit because no reverse links were created.");
-		}
+		Collection<Artifact> artifacts = selectedPkg.getArtifacts(); 
+		RevLinkCreation.createRevLinks(this.connection, artifacts, this.revLink);
+		RevLinkCreation.setOppositeProperties(connection, artifacts);
+		connection.tryCommit("");
 		
 		packages = connection.getPackages();
 		fillPackagesList();

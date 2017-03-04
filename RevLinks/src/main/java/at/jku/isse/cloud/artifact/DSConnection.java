@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import at.jku.isse.cloud.revlinks.RevLinkCreation;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Cloud;
 import at.jku.sea.cloud.CollectionArtifact;
@@ -229,16 +228,6 @@ public class DSConnection {
 	}
 	
 	/**
-	 * Returns the value of the property with the specified name.
-	 * @param artifact the artifact that contains the property
-	 * @param name the specified name of the property
-	 * @return the value of the property with the specified name
-	 */
-	public Object getArtifactProperty(Artifact artifact, String name) {
-		return artifact.getPropertyValue(name);
-	}
-	
-	/**
 	 * Returns the artifact with the specified id from the workspace.
 	 * If there exists no artifact with the specified id, then an empty optional instance is returned.
 	 * @param id the specified id of the artifact
@@ -259,6 +248,16 @@ public class DSConnection {
 	public void commit(String msg) {
 		ws.commitAll(msg);
 	}
+	
+	public boolean tryCommit(String msg) {
+		try {
+			commit(msg);
+			return true;
+		} catch(Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
     
 	private User getOrCreateUser(Cloud cloud, String name, String login, String pwd) {
     	try {
@@ -272,31 +271,13 @@ public class DSConnection {
     	}
     }
 
-	/**
-	 * Returns a collection of all currently available Artifacts of the workspace. 
-	 * @return a collection of all currently available Artifacts of the workspace.
-	 */
-	public Collection<Artifact> getAllArtifacts() {
-		return ws.getArtifacts();
-	}
-
 	public Collection<Artifact> getArtifactsOfType(DSClass type, Package parent) {
 		if(parent == null) {
 			// TODO: Get all artifacts without package
 			return Collections.emptyList();
 		}
-		String rlPkgName = parent.getPropertyValue("name").toString() + RevLinkCreation.RL_EXTENSION;
 		// Get package with matching name and parent package
-		Optional<Package> rlPkg = ws.getPackages().stream().filter(pkg -> rlPkgName.equals(pkg.getPropertyValue("name")) && parentsMatch(pkg, parent)).findAny();
-		Collection<Artifact> potentialCandidates = rlPkg.map(pkg -> pkg.getArtifacts()).orElse(Collections.emptyList());
-		return potentialCandidates.stream().filter(a -> a.getType().getId() == type.artifact.getId()).collect(Collectors.toList());
-	}
-	
-	private boolean parentsMatch(Package p1, Package p2) {
-		if(p1.getPackage() == null || p2.getPackage() == null) {
-			return p1.getPackage() == p2.getPackage();
-		}
-		return p1.getPackage().getId() == p2.getPackage().getId();
+		return parent.getArtifacts().stream().filter(a -> a.getType().getId() == type.artifact.getId()).collect(Collectors.toList());
 	}
 	
 	/**
@@ -349,5 +330,9 @@ public class DSConnection {
 			}
 		}
 		return Optional.empty();
+	}
+
+	public <T> void setPropertyValue(Artifact artifact, String propertyKey, T value) {
+		artifact.setPropertyValue(ws, propertyKey, value);
 	}
 }

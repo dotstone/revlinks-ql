@@ -13,6 +13,7 @@ import at.jku.isse.cloud.artifact.DSClass;
 import at.jku.isse.cloud.artifact.DSConnection;
 import at.jku.isse.cloud.artifact.DSRevLink;
 import at.jku.isse.cloud.revlinks.RevLink;
+import at.jku.isse.cloud.revlinks.RevLinkCreation;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.CollectionArtifact;
 import at.jku.sea.cloud.Package;
@@ -63,7 +64,8 @@ public class LinkQuery {
 	
 	private List<RevLink> visualizeRevLinks(Artifact artifact) {		
 		Artifact sourceModel = artifact.getType();
-		Collection<Artifact> revLinks = conn.getArtifactsOfType(revLinkModel, artifact.getPackage());
+		Package rlPkg = RevLinkCreation.getReverseLinkPackage(conn, artifact.getPackage());
+		Collection<Artifact> revLinks = conn.getArtifactsOfType(revLinkModel, rlPkg);
 		return revLinks.stream()
 				.filter(revLink -> getSourceModelIdOrZero(revLink) == sourceModel.getId())
 				.filter(revLink -> getSourceIdOrZero(revLink) == artifact.getId())
@@ -71,8 +73,9 @@ public class LinkQuery {
 				.collect(Collectors.toList());
 	}
 	
-	public Map<Artifact, List<RevLink>> getRevLinks(Package pkg) {		
-		Collection<Artifact> rlArtifacts = conn.getArtifactsOfType(revLinkModel, pkg);
+	public Map<Artifact, List<RevLink>> getRevLinks(Package pkg) {	
+		Package rlPkg = RevLinkCreation.getReverseLinkPackage(conn, pkg);
+		Collection<Artifact> rlArtifacts = conn.getArtifactsOfType(revLinkModel, rlPkg);
 		return rlArtifacts.stream()
 				.map(revLink -> new RevLink(revLink.getId(), getSource(revLink), getTarget(revLink), getSourceModel(revLink), getTargetModel(revLink), getRelNames(revLink)))
 				.collect(Collectors.groupingBy(RevLink::getSourceModel));

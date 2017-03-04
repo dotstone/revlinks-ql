@@ -3,6 +3,7 @@ package at.jku.isse.cloud.revlinks;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +21,8 @@ import at.jku.sea.cloud.Package;
 public class RevLinkCreation {
 	
 	public static final String RL_EXTENSION = "_RL";
+	
+	private static final String OPPOSITE_PROPERTY_KEY = "@opposite";
 	
 	private static DSConnection conn;
 	private static DSRevLink revLink;
@@ -47,14 +50,22 @@ public class RevLinkCreation {
 		 * (7) SD- What is the relation between a specific car and a specific color?
 		 */
 		
-		conn.commit("");
+		conn.tryCommit("");
 	}
 	
 	private static void createRevLinksForArtifact(Artifact artifact) {
-		createRevLinksForArtifact(artifact, conn, revLink);
+		createRevLinksForArtifact(conn, artifact, revLink);
 	}
 	
-	public static void createRevLinksForArtifact(Artifact artifact, DSConnection connection, DSRevLink revLink) {
+	public static void createRevLinks(DSConnection connection, Collection<Artifact> artifacts, DSRevLink revLink) {
+		artifacts.forEach(artifact -> createRevLinksForArtifact(connection, artifact, revLink));
+	}
+	
+	public static void setOppositeProperties(DSConnection connection, Collection<Artifact> artifacts) {
+		artifacts.forEach(artifact -> setOppositePropertyForArtifact(artifact, connection));
+	}
+	
+	private static void createRevLinksForArtifact(DSConnection connection, Artifact artifact, DSRevLink revLink) {
 		DSClass sourceModel = new DSClass(connection, artifact.getType(), artifact.getPackage());
 		Map<String, Object> props = artifact.getAlivePropertiesMap();
 		Multimap<Artifact, String> revLinkRelationNames = Multimaps.newListMultimap(new HashMap<>(), ArrayList::new);
@@ -72,10 +83,41 @@ public class RevLinkCreation {
 				continue;
 			}
 			DSClass targetModel = new DSClass(connection, target.getType(), targetPkg);
-			Package rlPkg = connection.getOrCreatePackage(targetPkg.getPropertyValue("name") + RL_EXTENSION, targetPkg.getPackage());
+			Package rlPkg = getReverseLinkPackage(connection, targetPkg);
 			revLink.createRevLink(sourceModel, targetModel, new DSInstance(connection, artifact), new DSInstance(connection, target), rlPkg,
 					entry.getValue().toArray(new String[entry.getValue().size()]));
 			System.out.println("Created RLink: " + artifact.getId() + " -> " + target.getId() + " [" + entry.getValue().stream().collect(Collectors.joining(",")) + "]");
 		}
+	}
+	
+	private static void setOppositePropertyForArtifact(Artifact artifact, DSConnection connection) {
+		DSRevLink revLinkType = connection.getOrCreateReverseLinkClass();
+		Package parent = artifact.getPackage();
+		Package pkg = getReverseLinkPackage(connection, parent);
+		Collection<Artifact> revLinks = connection.getArtifactsOfType(revLinkType, pkg);
+		
+		Set<Artifact> linkedArtifacts = new LinkedHashSet<>();
+		for(Artifact revLink : revLinks) {
+			Object sourceVal = revLink.getPropertyValueOrNull(DSRevLink.SOURCE_NAME);
+			if(sourceVal instanceof Artifact) {
+				if(((Artifact) sourceVal).getId() == artifact.getId()) {
+					// Found a valid reverse link
+					Object target = revLink.getPropertyValueOrNull(DSRevLink.TARGET_NAME);
+					if(target instanceof Artifact) {
+						linkedArtifacts.add((Artifact)target);
+					} else {
+						System.err.println("Reverse link with invalid target artifact found! Please review reverse link " + revLink.getId());
+					}
+				}
+			}
+		}
+		
+		Artifact oppositeCollection = connection.createCollectionArtifact(artifact.getId() + ".opposites", linkedArtifacts, artifact.getPackage());
+		connection.setPropertyValue(artifact, OPPOSITE_PROPERTY_KEY, oppositeCollection);
+		System.out.println("Set Opposite for " + artifact.getId() + " referencing " + linkedArtifacts.size() + " artifacts");
+	}
+	
+	public static Package getReverseLinkPackage(DSConnection conn, Package original) {
+		return conn.getOrCreatePackage(original.getPropertyValue("name") + RL_EXTENSION, original.getPackage());
 	}
 }
