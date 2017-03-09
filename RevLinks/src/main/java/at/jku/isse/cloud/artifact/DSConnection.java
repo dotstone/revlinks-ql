@@ -30,7 +30,7 @@ public class DSConnection {
 	private final Workspace ws;
 	
 	/**
-	 * Creates a new DSConnection object, a user (if it doesn't exist), a tool with the name "RevLinks" and a workspace.
+	 * Creates a new DSConnection object, a user (if it doesn't exist) and a workspace with the given tool.
 	 * @param username the name of the user
 	 * @param pwd the password of the user
 	 * @param toolId Artifact ID of the tool.
@@ -43,6 +43,12 @@ public class DSConnection {
         this.ws = cloud.createWorkspace(user.getOwner(), tool, workspace);
 	}
 	
+	/**
+	 * Creates a new DSConnection object, a user (if it doesn't exist), a tool with the name "RevLinks" in the version 0.1 and a workspace.
+	 * @param username the name of the user
+	 * @param pwd the password of the user
+	 * @param workspace the identifier for the workspace
+	 */
 	public DSConnection(String username, String pwd, String workspace) {
 		Cloud cloud = RestCloud.getInstance();
         User user = getOrCreateUser(cloud, username, username, pwd);
@@ -249,6 +255,11 @@ public class DSConnection {
 		ws.commitAll(msg);
 	}
 	
+	/**
+	 * Commits (and publishes the contents of the workspace. If the commit fails, then the stack trace is printed out.
+	 * @param msg the commit message, can be set to null
+	 * @return true, if the commit is successful, otherwise false
+	 */
 	public boolean tryCommit(String msg) {
 		try {
 			commit(msg);
@@ -332,6 +343,12 @@ public class DSConnection {
 		return Optional.empty();
 	}
 
+	/**
+	 * Sets the value of a property of an artifact.
+	 * @param artifact the artifact that holds the property
+	 * @param propertyKey the name of the property
+	 * @param value the value that will be set to the property
+	 */
 	public <T> void setPropertyValue(Artifact artifact, String propertyKey, T value) {
 		artifact.setPropertyValue(ws, propertyKey, value);
 	}
