@@ -20,7 +20,7 @@ import at.jku.sea.cloud.Package;
 
 public class RevLinkCreation {
 	
-	public static final String RL_EXTENSION = "_RL";
+	public static final String RL_PREFIX = "RL_";
 	
 	private static final String OPPOSITE_PROPERTY_KEY = "@opposite";
 	
@@ -118,6 +118,10 @@ public class RevLinkCreation {
 	}
 	
 	public static Package getReverseLinkPackage(DSConnection conn, Package original) {
-		return conn.getOrCreatePackage(original.getPropertyValue("name") + RL_EXTENSION, original.getPackage());
+		return conn.getOrCreatePackage(getReverseLinkPackageName(original), original.getPackage());
+	}
+	
+	public static String getReverseLinkPackageName(Package original) {
+		return RL_PREFIX + original.getId() + "_" + original.getPropertyValue("name");
 	}
 }

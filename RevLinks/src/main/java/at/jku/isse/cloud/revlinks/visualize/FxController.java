@@ -153,7 +153,7 @@ public class FxController implements Initializable {
 		if(reverseLinksExist()) {
 			this.createLinksButton.setDisable(true);
 			enableLinkPane();
-		} else if (linkQuery.getArtifactName(getCurrentlySelectedPackage()).endsWith(RevLinkCreation.RL_EXTENSION)) { 
+		} else if (linkQuery.getArtifactName(getCurrentlySelectedPackage()).startsWith(RevLinkCreation.RL_PREFIX)) { 
 			// selected package is a reverse link package
 			this.createLinksButton.setDisable(true);
 		} else {
@@ -169,7 +169,8 @@ public class FxController implements Initializable {
 		}
 		
 		return this.packages.stream()
-				.anyMatch(p -> linkQuery.getArtifactName(p).equals(linkQuery.getArtifactName(selectedPkg) + RevLinkCreation.RL_EXTENSION));
+				.anyMatch(p -> linkQuery.getArtifactName(p)
+						.equals(RevLinkCreation.getReverseLinkPackageName(selectedPkg)));
 	}
 	
 	/**
