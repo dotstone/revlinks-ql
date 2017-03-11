@@ -127,6 +127,7 @@ public class FxController implements Initializable {
 		this.packagesView.getItems().addAll(packages.stream()
 				.map(this::getPropertyName)
 				.filter(name -> name.toLowerCase().contains(this.pkgSearchField.getText().toLowerCase()))
+				.filter(name -> !name.startsWith(RevLinkCreation.RL_PREFIX))
 				.collect(Collectors.toList()));
 	}
 	
