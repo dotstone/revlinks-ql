@@ -359,4 +359,8 @@ public class DSConnection {
 	public <T> void setPropertyValue(Artifact artifact, String propertyKey, T value) {
 		artifact.setPropertyValue(ws, propertyKey, value);
 	}
+
+	public void addValueToCollection(CollectionArtifact collArtifact, long id) {
+		collArtifact.addElement(ws, id);
+	}
 }

@@ -168,14 +168,7 @@ public class FxController implements Initializable {
 	
 	private boolean reverseLinksExist() {
 		Package selectedPkg = getCurrentlySelectedPackage();
-		if(selectedPkg == null) {
-			return false;
-		}
-		
-		String revLinkPkgName = RevLinkCreation.getReverseLinkPackageName(selectedPkg);
-		return this.packages.stream()
-				.anyMatch(p -> linkQuery.getArtifactName(p)
-				.equals(revLinkPkgName));
+		return revLink.containsPackage(selectedPkg);
 	}
 	
 	/**
@@ -314,9 +307,7 @@ public class FxController implements Initializable {
 			return;
 		}
 		
-		Collection<Artifact> artifacts = selectedPkg.getArtifacts(); 
-		RevLinkCreation.createRevLinks(this.connection, artifacts, this.revLink);
-		RevLinkCreation.setOppositeProperties(connection, artifacts);
+		RevLinkCreation.createRevLinksAndSetOpposites(this.connection, selectedPkg, this.revLink);
 		connection.tryCommit("");
 		
 		packages = connection.getPackages();

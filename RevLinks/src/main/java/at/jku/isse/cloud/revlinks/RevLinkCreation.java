@@ -57,11 +57,18 @@ public class RevLinkCreation {
 		createRevLinksForArtifact(conn, artifact, revLink);
 	}
 	
-	public static void createRevLinks(DSConnection connection, Collection<Artifact> artifacts, DSRevLink revLink) {
+	public static void createRevLinksAndSetOpposites(DSConnection connection, Package pkg, DSRevLink revLink) {
+		Collection<Artifact> artifacts = pkg.getArtifacts();
+		createRevLinks(connection, artifacts, revLink);
+		setOppositeProperties(connection, artifacts);
+		revLink.addRevLinkPackage(pkg);
+	}
+	
+	private static void createRevLinks(DSConnection connection, Collection<Artifact> artifacts, DSRevLink revLink) {
 		artifacts.forEach(artifact -> createRevLinksForArtifact(connection, artifact, revLink));
 	}
 	
-	public static void setOppositeProperties(DSConnection connection, Collection<Artifact> artifacts) {
+	private static void setOppositeProperties(DSConnection connection, Collection<Artifact> artifacts) {
 		DSRevLink revLinkType = connection.getOrCreateReverseLinkClass();
 		// Just get the first package; as rev links are created for a single package at a time, this doesn't matter
 		Package parent = artifacts.iterator().next().getPackage();
