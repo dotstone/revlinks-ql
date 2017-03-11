@@ -62,7 +62,12 @@ public class RevLinkCreation {
 	}
 	
 	public static void setOppositeProperties(DSConnection connection, Collection<Artifact> artifacts) {
-		artifacts.forEach(artifact -> setOppositePropertyForArtifact(artifact, connection));
+		DSRevLink revLinkType = connection.getOrCreateReverseLinkClass();
+		// Just get the first package; as rev links are created for a single package at a time, this doesn't matter
+		Package parent = artifacts.iterator().next().getPackage();
+		Package pkg = getReverseLinkPackage(connection, parent);
+		Collection<Artifact> revLinks = connection.getArtifactsOfType(revLinkType, pkg);
+		artifacts.forEach(artifact -> setOppositePropertyForArtifact(artifact, connection, revLinks));
 	}
 	
 	private static void createRevLinksForArtifact(DSConnection connection, Artifact artifact, DSRevLink revLink) {
@@ -90,12 +95,7 @@ public class RevLinkCreation {
 		}
 	}
 	
-	private static void setOppositePropertyForArtifact(Artifact artifact, DSConnection connection) {
-		DSRevLink revLinkType = connection.getOrCreateReverseLinkClass();
-		Package parent = artifact.getPackage();
-		Package pkg = getReverseLinkPackage(connection, parent);
-		Collection<Artifact> revLinks = connection.getArtifactsOfType(revLinkType, pkg);
-		
+	private static void setOppositePropertyForArtifact(Artifact artifact, DSConnection connection, Collection<Artifact> revLinks) {
 		Set<Artifact> linkedArtifacts = new LinkedHashSet<>();
 		for(Artifact revLink : revLinks) {
 			Object sourceVal = revLink.getPropertyValueOrNull(DSRevLink.SOURCE_NAME);

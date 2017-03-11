@@ -168,9 +168,10 @@ public class FxController implements Initializable {
 			return false;
 		}
 		
+		String revLinkPkgName = RevLinkCreation.getReverseLinkPackageName(selectedPkg);
 		return this.packages.stream()
 				.anyMatch(p -> linkQuery.getArtifactName(p)
-						.equals(RevLinkCreation.getReverseLinkPackageName(selectedPkg)));
+				.equals(revLinkPkgName));
 	}
 	
 	/**

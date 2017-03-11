@@ -29,6 +29,8 @@ public class DSConnection {
 	
 	private final Workspace ws;
 	
+	private DSRevLink revLinkClass;
+	
 	/**
 	 * Creates a new DSConnection object, a user (if it doesn't exist) and a workspace with the given tool.
 	 * @param username the name of the user
@@ -294,12 +296,17 @@ public class DSConnection {
 	/**
 	 * Gets the package for the reverse link model artifact with the name "RevLinks" and returns the reverse link model artifact. 
 	 * If the reverse link model artifact or/and the package don't exist, then they will be created first.
+	 * This method caches the class to speedup further calls.
 	 * @return the newly created or existing reverse link model artifact
 	 */
 	public DSRevLink getOrCreateReverseLinkClass() {
+		if(revLinkClass != null) {
+			return revLinkClass;
+		}
 		Package pkg = getOrCreatePackage("RevLinks");
 		try {
-			return getReverseLinkClass(pkg);
+			revLinkClass = getReverseLinkClass(pkg);
+			return revLinkClass;
 		} catch(IllegalStateException e) {
 			return new DSRevLink(this, pkg);
 		}
