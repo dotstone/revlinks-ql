@@ -27,8 +27,8 @@
          <children>
             <ListView fx:id="linkView" layoutX="7.0" layoutY="84.0" onKeyReleased="#linkSelectionChanged" onMouseClicked="#linkSelectionChanged" prefHeight="394.0" prefWidth="252.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="7.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="84.0" />
             <Label layoutX="20.0" layoutY="17.0" text="Search" />
-            <TextField fx:id="linkSearchField" layoutX="110.0" layoutY="13.0" onKeyReleased="#searchTextChanged" />
-            <MenuButton fx:id="linkTypeButton" layoutX="110.0" layoutY="47.0" mnemonicParsing="false" onAction="#linkTypeSelectionChanged" prefHeight="25.0" prefWidth="149.0" text="MenuButton">
+            <TextField fx:id="linkSearchField" layoutX="110.0" layoutY="13.0" onKeyReleased="#searchTextChanged" prefHeight="25.0" prefWidth="255.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="13.0" />
+            <MenuButton fx:id="linkTypeButton" layoutX="110.0" layoutY="47.0" mnemonicParsing="false" onAction="#linkTypeSelectionChanged" prefHeight="25.0" prefWidth="255.0" text="MenuButton" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="47.0">
               <items>
                 <MenuItem mnemonicParsing="false" text="Action 1" />
                 <MenuItem mnemonicParsing="false" text="Action 2" />

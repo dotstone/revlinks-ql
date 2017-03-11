@@ -36,6 +36,8 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 
 public class FxController implements Initializable {
@@ -131,8 +133,10 @@ public class FxController implements Initializable {
 	/**
 	 * Called when the input text of the search field in the package pane changes.
 	 */
-	public void packageSearchFieldChanges() {
-		fillPackagesList();
+	public void packageSearchFieldChanges(KeyEvent keyEvent) {
+		if(KeyCode.ENTER.equals(keyEvent.getCode())) {
+			fillPackagesList();
+		}
 	}
 
 	/**
@@ -345,8 +349,10 @@ public class FxController implements Initializable {
 	/**
 	 * Called when pane is enabled or when the search field text in the links pane changes.
 	 */
-	public void searchTextChanged() {
-		fillLinkList();
+	public void searchTextChanged(KeyEvent keyEvent) {
+		if(KeyCode.ENTER.equals(keyEvent.getCode())) {
+			fillLinkList();
+		}
 	}
 	
 	/**
