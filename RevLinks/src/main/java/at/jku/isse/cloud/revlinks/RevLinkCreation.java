@@ -28,7 +28,7 @@ public class RevLinkCreation {
 	private static DSRevLink revLink;
 
 	public static void main(String[] args) {
-		conn = new DSConnection("dos", "mepwd", "my workspace");
+		conn = new DSConnection("RL_user", "RL_pwd", "RL_workspace");
 		revLink = conn.getOrCreateReverseLinkClass();
 		
 		Set<String> pkgNames = new PackageSelector().select(name -> conn.getPackageFromName(name) != null);
