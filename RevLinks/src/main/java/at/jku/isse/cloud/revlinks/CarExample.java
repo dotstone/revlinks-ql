@@ -10,16 +10,16 @@ import at.jku.sea.cloud.Project;
 public class CarExample {
 
 	public static void main(String[] args) {
-		DSConnection conn = new DSConnection("dos", "mepwd", "my workspace");
+		DSConnection conn = new DSConnection("Car_user", "Car_pwd", "car_workspace");
 		Package uml = conn.getOrCreatePackage("Cars_UML");
 		Package instances = conn.getOrCreatePackage("Cars_Instances");
 		Project project = conn.createProject("Cars");
     	
 		// Create Meta Model
-		DSClass colorModel = new DSClass(conn, "Color", uml, project).withFeatures("colorName");
+		DSClass colorModel = new DSClass(conn, "Color", uml, project).withFeatures("colorName", "@opposite");
 		DSClass countryModel = new DSClass(conn, "Country", uml, project).withFeatures("name");
 		DSLink brandOrigin = new DSLink("brand_country", countryModel, 0, -1, 1, 1);
-		DSClass brandModel = new DSClass(conn, "Brand", uml, project).withFeatures("brandName").withLinks(brandOrigin);
+		DSClass brandModel = new DSClass(conn, "Brand", uml, project).withFeatures("brandName", "@opposite").withLinks(brandOrigin);
 		DSLink hasColor = new DSLink("has_color", colorModel, 0, -1, 1, 1);
 		DSLink interiorColor = new DSLink("interior_color", colorModel, 0, -1, 1, 1);
 		DSLink brand = new DSLink("brand", brandModel, 0, -1, 1, 1);

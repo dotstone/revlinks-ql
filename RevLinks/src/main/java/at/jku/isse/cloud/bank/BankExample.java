@@ -10,8 +10,8 @@ public class BankExample {
 	
     @SuppressWarnings("unused")
 	public static void main(String[] args ) {
-    	DSConnection conn = new DSConnection("dos", "mepwd", "my workspace");
-    	Package pkg = conn.getOrCreatePackage("some other package");
+    	DSConnection conn = new DSConnection("Bank_user", "Bank_pwd", "bank_workspace");
+    	Package pkg = conn.getOrCreatePackage("Bank");
     	
     	DSClass transaction = new DSClass(conn, "Transaction", pkg).withFeatures("amount");
     	DSClass headOffice = new DSClass(conn, "HeadOffice", pkg).withFeatures("bankName", "address");
