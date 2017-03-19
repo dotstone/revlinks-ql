@@ -61,7 +61,12 @@ public class FxVisualizer extends Application {
 			if(arguments.length == 4) {
 				try {
 					LOGGER.info("Using provided credentials: user=" + arguments[0] + ",tool id=" + arguments[2] + ",workspace=" + arguments[3]);
-					return new DSConnection(arguments[0], arguments[1], Integer.parseInt(arguments[2]), arguments[3]);
+					try {
+						int toolId = Integer.parseInt(arguments[2]);
+						return new DSConnection(arguments[0], arguments[1], toolId, arguments[3]);
+					} catch(NumberFormatException e) {
+						LOGGER.error("Tool artifact ID is not a number: {}. Expected arguments: <username> <password> <tool artifact id> <workspace>");
+					}
 				} catch(ResourceAccessException e) {
 					LOGGER.error("Failed to connect to DesignSpace Server!", e);
 				} catch(ToolDoesNotExistException e) {
