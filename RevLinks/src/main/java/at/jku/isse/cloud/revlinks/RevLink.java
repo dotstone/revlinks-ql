@@ -9,17 +9,17 @@ public class RevLink {
 	private final Artifact source;
 	private final Artifact target;
 	
-	private final Artifact sourceModel;
-	private final Artifact targetModel;
+	private final Artifact sourceType;
+	private final Artifact targetType;
 	
 	private final String[] relNames;
 	
-	public RevLink(long id, Artifact source, Artifact target, Artifact sourceModel, Artifact targetModel, String... relNames) {
+	public RevLink(long id, Artifact source, Artifact target, Artifact sourceType, Artifact targetType, String... relNames) {
 		this.id = id;
 		this.source = source;
 		this.target = target;
-		this.sourceModel = sourceModel;
-		this.targetModel = targetModel;
+		this.sourceType = sourceType;
+		this.targetType = targetType;
 		this.relNames = relNames;
 	}
 	
@@ -35,12 +35,12 @@ public class RevLink {
 		return target;
 	}
 
-	public Artifact getSourceModel() {
-		return sourceModel;
+	public Artifact getSourceType() {
+		return sourceType;
 	}
 
-	public Artifact getTargetModel() {
-		return targetModel;
+	public Artifact getTargetType() {
+		return targetType;
 	}
 	
 	public String[] getRelNames() {

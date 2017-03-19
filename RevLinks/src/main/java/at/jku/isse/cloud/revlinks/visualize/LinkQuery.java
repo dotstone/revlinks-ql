@@ -63,13 +63,13 @@ public class LinkQuery {
 	}
 	
 	private List<RevLink> visualizeRevLinks(Artifact artifact) {		
-		Artifact sourceModel = artifact.getType();
+		Artifact sourceType = artifact.getType();
 		Package rlPkg = RevLinkCreation.getReverseLinkPackage(conn, artifact.getPackage());
 		Collection<Artifact> revLinks = conn.getArtifactsOfType(revLinkModel, rlPkg);
 		return revLinks.stream()
-				.filter(revLink -> getSourceModelIdOrZero(revLink) == sourceModel.getId())
+				.filter(revLink -> getSourceTypeIdOrZero(revLink) == sourceType.getId())
 				.filter(revLink -> getSourceIdOrZero(revLink) == artifact.getId())
-				.map(revLink -> new RevLink(revLink.getId(), getSource(revLink), getTarget(revLink), getSourceModel(revLink), getTargetModel(revLink), getRelNames(revLink)))
+				.map(revLink -> new RevLink(revLink.getId(), getSource(revLink), getTarget(revLink), getSourceType(revLink), getTargetType(revLink), getRelNames(revLink)))
 				.collect(Collectors.toList());
 	}
 	
@@ -77,8 +77,8 @@ public class LinkQuery {
 		Package rlPkg = RevLinkCreation.getReverseLinkPackage(conn, pkg);
 		Collection<Artifact> rlArtifacts = conn.getArtifactsOfType(revLinkModel, rlPkg);
 		return rlArtifacts.stream()
-				.map(revLink -> new RevLink(revLink.getId(), getSource(revLink), getTarget(revLink), getSourceModel(revLink), getTargetModel(revLink), getRelNames(revLink)))
-				.collect(Collectors.groupingBy(RevLink::getSourceModel));
+				.map(revLink -> new RevLink(revLink.getId(), getSource(revLink), getTarget(revLink), getSourceType(revLink), getTargetType(revLink), getRelNames(revLink)))
+				.collect(Collectors.groupingBy(RevLink::getSourceType));
 
 	}
 	
@@ -90,9 +90,9 @@ public class LinkQuery {
 		}
 	}
 	
-	private long getSourceModelIdOrZero(Artifact revLink) {
+	private long getSourceTypeIdOrZero(Artifact revLink) {
 		try {
-			return getSourceModel(revLink).getId();
+			return getSourceType(revLink).getId();
 		} catch(IllegalArgumentException e) {
 			return 0;
 		}
@@ -102,16 +102,16 @@ public class LinkQuery {
 		return getArtifactByProperty(revLink, DSRevLink.SOURCE_NAME);
 	}
 	
-	private Artifact getSourceModel(Artifact revLink) {
-		return getArtifactByProperty(revLink, DSRevLink.SOURCE_MODEL_NAME);
+	private Artifact getSourceType(Artifact revLink) {
+		return getArtifactByProperty(revLink, DSRevLink.SOURCE_TYPE_NAME);
 	}
 	
 	private Artifact getTarget(Artifact revLink) {
 		return getArtifactByProperty(revLink, DSRevLink.TARGET_NAME);
 	}
 	
-	private Artifact getTargetModel(Artifact revLink) {
-		return getArtifactByProperty(revLink, DSRevLink.TARGET_MODEL_NAME);
+	private Artifact getTargetType(Artifact revLink) {
+		return getArtifactByProperty(revLink, DSRevLink.TARGET_TYPE_NAME);
 	}
 	
 	private String[] getRelNames(Artifact revLink) {

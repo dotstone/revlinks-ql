@@ -29,9 +29,9 @@ public class DSRevLink extends DSClass {
 	public static final String LINKED_PACKAGES_ARTIFACT_NAME = "Packages";
 	
 	public static final String SOURCE_NAME = "source";
-	public static final String SOURCE_MODEL_NAME = "sourceModel";
+	public static final String SOURCE_TYPE_NAME = "sourceType";
 	public static final String TARGET_NAME = "target";
-	public static final String TARGET_MODEL_NAME = "targetModel";
+	public static final String TARGET_TYPE_NAME = "targetType";
 	public static final String REL_NAMES_NAME = "relNames";
 	
 	private final CollectionArtifact linkedPackagesArtifact;
@@ -43,7 +43,7 @@ public class DSRevLink extends DSClass {
 	 */
 	public DSRevLink(DSConnection conn, Package pkg) {
 		super(conn, REV_LINK_NAME, pkg);
-		this.withFeatures(SOURCE_NAME, TARGET_NAME, SOURCE_MODEL_NAME, TARGET_MODEL_NAME, REL_NAMES_NAME);
+		this.withFeatures(SOURCE_NAME, TARGET_NAME, SOURCE_TYPE_NAME, TARGET_TYPE_NAME, REL_NAMES_NAME);
 		linkedPackagesArtifact = conn.createCollectionArtifact(LINKED_PACKAGES_ARTIFACT_NAME, Collections.emptyList(), pkg);
 	}
 	
@@ -69,20 +69,20 @@ public class DSRevLink extends DSClass {
 	 * The collection artifact, that contains the names of the links, is put into the same package
 	 * as the reverse link. The name of the collection artifact results from the name of 
 	 * the reverse link and the extension ".types".
-	 * @param targetModel the model artifact of the target
-	 * @param sourceModel the model artifact of the source
+	 * @param targetType the type artifact of the target
+	 * @param sourceType the type artifact of the source
 	 * @param target the target artifact
 	 * @param source the source artifact
 	 * @param instPkg the package that contains the newly created reverse link
 	 * @param types the name of the links
 	 */
-	public void createRevLink(DSClass targetModel, DSClass sourceModel, DSInstance target, DSInstance source, Package instPkg, String... types) {
+	public void createRevLink(DSClass targetType, DSClass sourceType, DSInstance target, DSInstance source, Package instPkg, String... types) {
 		String rlName = "[RL] " + hash(target, source);
 		DSInstance revLink = createInstance(rlName, instPkg);
 		revLink.setProperty(SOURCE_NAME, source);
-		revLink.setProperty(SOURCE_MODEL_NAME, sourceModel);
+		revLink.setProperty(SOURCE_TYPE_NAME, sourceType);
 		revLink.setProperty(TARGET_NAME, target);
-		revLink.setProperty(TARGET_MODEL_NAME, targetModel);
+		revLink.setProperty(TARGET_TYPE_NAME, targetType);
 		CollectionArtifact typeCollectionArtifact = 
 				conn.createCollectionArtifact(rlName + ".types", Arrays.asList(types), instPkg);
 		revLink.setProperty(REL_NAMES_NAME, typeCollectionArtifact);
