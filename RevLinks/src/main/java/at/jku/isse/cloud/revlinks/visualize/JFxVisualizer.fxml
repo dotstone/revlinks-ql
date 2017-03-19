@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -35,6 +36,7 @@
               </items>
             </MenuButton>
             <Label layoutX="22.0" layoutY="51.0" text="Link Type" />
+            <ProgressIndicator fx:id="progressIndicator" layoutX="150.0" layoutY="188.0" prefHeight="86.0" prefWidth="81.0" />
          </children>
       </AnchorPane>
       <AnchorPane fx:id="artifactPane" minHeight="0.0" minWidth="0.0" prefHeight="483.0" prefWidth="495.0">

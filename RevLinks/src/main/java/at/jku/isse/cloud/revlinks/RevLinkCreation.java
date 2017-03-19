@@ -59,8 +59,10 @@ public class RevLinkCreation {
 	
 	public static void createRevLinksAndSetOpposites(DSConnection connection, Package pkg, DSRevLink revLink) {
 		Collection<Artifact> artifacts = pkg.getArtifacts();
-		createRevLinks(connection, artifacts, revLink);
-		setOppositeProperties(connection, artifacts);
+		if(!artifacts.isEmpty()) {
+			createRevLinks(connection, artifacts, revLink);
+			setOppositeProperties(connection, artifacts);
+		}
 		revLink.addRevLinkPackage(pkg);
 	}
 	

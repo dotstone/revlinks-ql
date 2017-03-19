@@ -28,10 +28,12 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -69,6 +71,8 @@ public class FxController implements Initializable {
 	@FXML private TableColumn<LinkRow, String> incTypeCol;
 	@FXML private TableColumn<LinkRow, String> incLinkCol;
 	
+	@FXML private ProgressIndicator progressIndicator;
+	
 	private DSConnection connection;
 	private DSRevLink revLink;
 	private LinkQuery linkQuery;
@@ -100,6 +104,8 @@ public class FxController implements Initializable {
         outgoingView.setItems(outgoingRows);
 		incomingView.setItems(incomingRows);
 		
+		progressIndicator.setVisible(false);
+		
 		Platform.runLater(() -> linkSearchField.requestFocus());
 	}
 	
@@ -116,10 +122,19 @@ public class FxController implements Initializable {
 		this.packages = connection.getPackages();
 		
 		fillPackagesList();
-		this.linkPane.setDisable(true);
+		setLinkPaneDisable(true);
 		this.artifactPane.setDisable(true);
 		this.radioSource.setSelected(true);
 		this.createLinksButton.setDisable(true);
+	}
+	
+	private void setLinkPaneDisable(boolean disable) {
+		// Workaround to enable the progress indicator while the parent pane is disabled
+		// Set all children to disabled while the parent remains enabled.
+		for(Node x : linkPane.getChildren()) {
+			x.setDisable(disable);
+		}
+		progressIndicator.setDisable(false);
 	}
 	
 	private void fillPackagesList() {
@@ -151,7 +166,7 @@ public class FxController implements Initializable {
 		Package currentlySelected = getCurrentlySelectedPackage();
 		if(currentlySelected == null) {
 			this.createLinksButton.setDisable(true);
-			this.linkPane.setDisable(true);
+			setLinkPaneDisable(true);
 			return;
 		}
 		
@@ -163,7 +178,7 @@ public class FxController implements Initializable {
 			this.createLinksButton.setDisable(true);
 		} else {
 			this.createLinksButton.setDisable(false);
-			this.linkPane.setDisable(true);
+			setLinkPaneDisable(true);
 		}
 	}
 	
@@ -216,7 +231,7 @@ public class FxController implements Initializable {
 		}
 		
 		fillLinkListNoFilter();
-		this.linkPane.setDisable(false);
+		setLinkPaneDisable(false);
 	}
 	
 	private void fillLinkList() {
@@ -302,21 +317,25 @@ public class FxController implements Initializable {
 	 */
 	public void createRevLinks() {
 		this.createLinksButton.setDisable(true);
+		this.progressIndicator.setVisible(true);
+		progressIndicator.setDisable(false);
 
 		Package selectedPkg = getCurrentlySelectedPackage();
 		if(selectedPkg == null) {
 			return;
 		}
-		
-		RevLinkCreation.createRevLinksAndSetOpposites(this.connection, selectedPkg, this.revLink);
-		connection.tryCommit("");
-		
-		packages = connection.getPackages();
-		fillPackagesList();
-		this.packagesView.getSelectionModel().select(getPropertyName(selectedPkg));
-		
-		enableLinkPane();
-		this.linkSearchField.requestFocus();
+		new Thread(() -> {
+			RevLinkCreation.createRevLinksAndSetOpposites(this.connection, selectedPkg, this.revLink);
+			connection.tryCommit("");
+			
+			Platform.runLater(() -> {
+				progressIndicator.setVisible(false);
+				this.packagesView.getSelectionModel().select(getPropertyName(selectedPkg));
+				
+				enableLinkPane();
+				this.linkSearchField.requestFocus();
+			});
+		}).start();
 	}
 	
 	/**
