@@ -138,7 +138,7 @@ public class CarExample {
 		bmw.setLinkProperty(brandOrigin, germany);
 		porsche.setLinkProperty(brandOrigin, germany);
 		
-		System.out.println("Finished!");
 		conn.commit("");
+		System.out.println("Finished!");
 	}
 }
