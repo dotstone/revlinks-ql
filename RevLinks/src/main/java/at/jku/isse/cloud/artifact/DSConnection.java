@@ -2,6 +2,7 @@ package at.jku.isse.cloud.artifact;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -19,6 +20,10 @@ import at.jku.sea.cloud.exceptions.CredentialsException;
 import at.jku.sea.cloud.mmm.MMMTypeProperties;
 import at.jku.sea.cloud.mmm.MMMTypesFactory;
 import at.jku.sea.cloud.rest.client.RestCloud;
+import at.jku.sea.cloud.stream.Context.Path;
+import at.jku.sea.cloud.stream.Contexts;
+import at.jku.sea.cloud.stream.QueryFactory;
+import at.jku.sea.cloud.stream.predicate.Predicate;
 
 /**
  * Represents a connection to the Design Space and provides methods for creating and modifying artifacts in the workspace.
@@ -27,7 +32,13 @@ import at.jku.sea.cloud.rest.client.RestCloud;
  */
 public class DSConnection {
 	
+	private static final String PATH = "";
+	
+	private final Cloud cloud;
 	private final Workspace ws;
+	private final QueryFactory queryFactory;
+	
+	private final Predicate<Artifact> isRevLinkArtifact;
 	
 	private DSRevLink revLinkClass;
 	
@@ -39,10 +50,15 @@ public class DSConnection {
 	 * @param workspace the identifier for the workspace
 	 */
 	public DSConnection(String username, String pwd, int toolId, String workspace) {
-		Cloud cloud = RestCloud.getInstance();
+		this.cloud = RestCloud.getInstance();
         User user = getOrCreateUser(cloud, username, username, pwd);
         Tool tool = cloud.getTool(toolId);
         this.ws = cloud.createWorkspace(user.getOwner(), tool, workspace);
+        
+        queryFactory = cloud.queryFactory();
+		Path path = Contexts.of(PATH);
+		isRevLinkArtifact = queryFactory.predicateProvider().hasProperty(path, MMMTypeProperties.NAME)
+				.and(queryFactory.predicateProvider().hasPropertyValue(path, MMMTypeProperties.NAME, DSRevLink.REV_LINK_NAME));
 	}
 	
 	/**
@@ -52,10 +68,15 @@ public class DSConnection {
 	 * @param workspace the identifier for the workspace
 	 */
 	public DSConnection(String username, String pwd, String workspace) {
-		Cloud cloud = RestCloud.getInstance();
+		this.cloud = RestCloud.getInstance();
         User user = getOrCreateUser(cloud, username, username, pwd);
         Tool tool = getOrCreateTool(cloud, "RevLinks", "0.1");
         this.ws = cloud.createWorkspace(user.getOwner(), tool, workspace);
+        
+        queryFactory = cloud.queryFactory();
+		Path path = Contexts.of(PATH);
+		isRevLinkArtifact = queryFactory.predicateProvider().hasProperty(path, MMMTypeProperties.NAME)
+				.and(queryFactory.predicateProvider().hasPropertyValue(path, MMMTypeProperties.NAME, DSRevLink.REV_LINK_NAME));
 	}
 	
 	/**
@@ -286,11 +307,12 @@ public class DSConnection {
 
 	public Collection<Artifact> getArtifactsOfType(DSClass type, Package parent) {
 		if(parent == null) {
-			// TODO: Get all artifacts without package
 			return Collections.emptyList();
 		}
 		// Get package with matching name and parent package
-		return parent.getArtifacts().stream().filter(a -> a.getType().getId() == type.artifact.getId()).collect(Collectors.toList());
+		return parent.getArtifacts().stream()
+				.filter(a -> a.getType().getId() == type.artifact.getId())
+				.collect(Collectors.toList());
 	}
 	
 	/**
@@ -312,18 +334,13 @@ public class DSConnection {
 		}
 	}
 	
-	private DSRevLink getReverseLinkClass(Package pkg) {
-		return new DSRevLink(this, 
-				ws.getArtifacts().stream()
-					.filter(this::hasRevLinkName)
-					.findAny()
-					.orElseThrow(() -> new IllegalStateException("Model for reverse links not found!")), 
-				pkg);
-	}
-	
-	private boolean hasRevLinkName(Artifact artifact) {
-		Object val = artifact.getPropertyValueOrNull(MMMTypeProperties.NAME);
-		return DSRevLink.REV_LINK_NAME.equals(val);
+	private DSRevLink getReverseLinkClass(Package pkg) {			
+		try {
+			Artifact artifact = queryFactory.streamProvider().of(ws.getArtifacts()).find(PATH, isRevLinkArtifact);
+			return new DSRevLink(this, artifact, pkg);
+		} catch(NoSuchElementException e) {
+			throw new IllegalStateException();
+		}
 	}
 
 	/**
