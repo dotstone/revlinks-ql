@@ -24,6 +24,7 @@ import at.jku.sea.cloud.stream.Context.Path;
 import at.jku.sea.cloud.stream.Contexts;
 import at.jku.sea.cloud.stream.QueryFactory;
 import at.jku.sea.cloud.stream.predicate.Predicate;
+import at.jku.sea.cloud.stream.predicate.PredicateProvider;
 
 /**
  * Represents a connection to the Design Space and provides methods for creating and modifying artifacts in the workspace.
@@ -57,8 +58,9 @@ public class DSConnection {
         
         queryFactory = cloud.queryFactory();
 		Path path = Contexts.of(PATH);
-		isRevLinkArtifact = queryFactory.predicateProvider().hasProperty(path, MMMTypeProperties.NAME)
-				.and(queryFactory.predicateProvider().hasPropertyValue(path, MMMTypeProperties.NAME, DSRevLink.REV_LINK_NAME));
+		PredicateProvider predicates = queryFactory.predicateProvider();
+		isRevLinkArtifact = predicates.hasProperty(path, MMMTypeProperties.NAME)
+				.and(predicates.hasPropertyValue(path, MMMTypeProperties.NAME, DSRevLink.REV_LINK_NAME));
 	}
 	
 	/**
