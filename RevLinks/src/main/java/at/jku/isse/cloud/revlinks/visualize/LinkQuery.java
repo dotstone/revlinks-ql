@@ -19,6 +19,7 @@ import at.jku.sea.cloud.CollectionArtifact;
 import at.jku.sea.cloud.Package;
 import at.jku.sea.cloud.Project;
 import at.jku.sea.cloud.mmm.MMMTypeProperties;
+import at.jku.sea.cloud.rest.client.RestCloud;
 
 public class LinkQuery {
 	
@@ -124,10 +125,6 @@ public class LinkQuery {
 	}
 	
 	private Artifact getArtifactByProperty(Artifact artifact, String property) {
-		Object val = artifact.getPropertyValueOrNull(property);
-		if(val instanceof Artifact) {
-			return (Artifact)val;
-		}
-		throw new IllegalArgumentException("Cannot extract property " + property + " from artifact id=" + artifact.getId());
+		return RestCloud.getInstance().queryFactory().navigatorProvider().from(artifact).to(property).get();
 	}
 }
