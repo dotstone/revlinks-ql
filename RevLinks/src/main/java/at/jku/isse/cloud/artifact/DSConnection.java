@@ -116,7 +116,7 @@ public class DSConnection {
 	 */
 	public Package getOrCreatePackage(String pkg, Package parent) {
 		return ws.getPackages().stream()
-				.filter(p -> pkg.equals(p.getPropertyValue("name")))
+				.filter(p -> pkg.equals(queryFactory.navigatorProvider().from(p).toString("name").get()))
 				.filter(p -> p.getPackage() == null || parent == null || p.getPackage().getId() == parent.getId())
 				.findAny()
 				.orElseGet(() -> createPackage(pkg, parent));
@@ -362,7 +362,7 @@ public class DSConnection {
 	 */
 	public Optional<Package> getPackageFromName(String targetPkg) {
 		for(Package pkg : ws.getPackages()) {
-			if(targetPkg.equals(pkg.getPropertyValue("name"))) {
+			if(targetPkg.equals(queryFactory.navigatorProvider().from(pkg).toString("name").get())) {
 				return Optional.of(pkg);
 			}
 		}
