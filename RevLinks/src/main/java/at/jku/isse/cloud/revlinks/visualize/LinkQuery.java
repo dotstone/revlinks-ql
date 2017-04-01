@@ -19,16 +19,19 @@ import at.jku.sea.cloud.CollectionArtifact;
 import at.jku.sea.cloud.Package;
 import at.jku.sea.cloud.Project;
 import at.jku.sea.cloud.mmm.MMMTypeProperties;
+import at.jku.sea.cloud.navigator.NavigatorProvider;
 import at.jku.sea.cloud.rest.client.RestCloud;
 
 public class LinkQuery {
 	
 	private final DSConnection conn;
 	private final DSClass revLinkModel;
+	private final NavigatorProvider navigatorProvider;
 
 	public LinkQuery(DSConnection conn, Project project) {
 		this.conn = requireNonNull(conn);
 		this.revLinkModel = conn.getOrCreateReverseLinkClass();
+		navigatorProvider = RestCloud.getInstance().queryFactory().navigatorProvider();
 	}
 	
 	public String getName(long id) {
@@ -116,15 +119,12 @@ public class LinkQuery {
 	}
 	
 	private String[] getRelNames(Artifact revLink) {
-		Object val = revLink.getPropertyValueOrNull(DSRevLink.REL_NAMES_NAME);
-		if(val instanceof CollectionArtifact) {
-			Collection<String> relNames = (Collection<String>) ((CollectionArtifact)val).getElements();
-			return relNames.toArray(new String[relNames.size()]);
-		}
-		throw new IllegalStateException("RevLink " + revLink.getId() + " does not contain a rel name collection!");
+		 Collection<String> relNames = (Collection<String>) navigatorProvider
+				 .from(revLink).toCollection(DSRevLink.REL_NAMES_NAME).get().getElements();
+		 return relNames.toArray(new String[relNames.size()]);
 	}
 	
 	private Artifact getArtifactByProperty(Artifact artifact, String property) {
-		return RestCloud.getInstance().queryFactory().navigatorProvider().from(artifact).to(property).get();
+		return navigatorProvider.from(artifact).to(property).get();
 	}
 }
