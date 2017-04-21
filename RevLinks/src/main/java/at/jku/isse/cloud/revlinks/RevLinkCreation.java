@@ -18,6 +18,11 @@ import at.jku.isse.cloud.artifact.DSRevLink;
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Package;
 
+/**
+ * This class contains the functionality for creating the reverse links.
+ * @author Gabriel Schoerghuber
+ * @author Dominik Steinbinder
+ */
 public class RevLinkCreation {
 	
 	public static final String RL_PREFIX = "RL_";
@@ -57,6 +62,15 @@ public class RevLinkCreation {
 		createRevLinksForArtifact(conn, artifact, revLink);
 	}
 	
+	/**
+	 * Creates the reverse link package and the reverse link artifacts for the corresponding artifacts of a given package. 
+	 * The reverse link package is only created, if it doesn't exist. The ids of the target artifacts of a reverse link are added to
+	 * the collection artifact of the "@opposite" property of the source artifact. 
+	 * The id of the given package is added to the ids of packages, for which the reverse links have already been created.
+	 * @param connection the Design Space connection
+	 * @param pkg the given package that holds the artifacts for which the reverse links will be created
+	 * @param revLink the reverse link model
+	 */
 	public static void createRevLinksAndSetOpposites(DSConnection connection, Package pkg, DSRevLink revLink) {
 		Collection<Artifact> artifacts = pkg.getArtifacts();
 		if(!artifacts.isEmpty()) {
@@ -126,10 +140,21 @@ public class RevLinkCreation {
 		System.out.println("Set Opposite for " + artifact.getId() + " referencing " + linkedArtifacts.size() + " artifacts");
 	}
 	
+	/**
+	 * Returns or creates (if the package doesn't exist) the corresponding reverse link package of a given package.
+	 * @param conn the Design Space connection
+	 * @param original the given package
+	 * @return the corresponding reverse link package of a given package 
+	 */
 	public static Package getReverseLinkPackage(DSConnection conn, Package original) {
 		return conn.getOrCreatePackage(getReverseLinkPackageName(original), original.getPackage());
 	}
 	
+	/**
+	 * Returns the corresponding reverse link package name of a given package.
+	 * @param original the given package
+	 * @return the corresponding name of the reverse link package of a given package
+	 */
 	public static String getReverseLinkPackageName(Package original) {
 		return RL_PREFIX + original.getId() + "_" + original.getPropertyValue("name");
 	}

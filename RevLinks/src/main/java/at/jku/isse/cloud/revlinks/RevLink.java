@@ -2,6 +2,17 @@ package at.jku.isse.cloud.revlinks;
 
 import at.jku.sea.cloud.Artifact;
 
+/**
+ * This class represents a reverse link. It contains the following fields:
+ * <li> id of the reverse link
+ * <li> source artifact
+ * <li> target artifact
+ * <li> source type artifact
+ * <li> target type artifact
+ * <li> relation names
+ * @author Gabriel Schoerghuber
+ * @author Dominik Steinbinder
+ */
 public class RevLink {
 
 	private final long id;

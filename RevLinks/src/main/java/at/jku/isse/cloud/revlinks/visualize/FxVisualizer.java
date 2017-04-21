@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.client.ResourceAccessException;
 
 import at.jku.isse.cloud.artifact.DSConnection;
-import at.jku.sea.cloud.Project;
 import at.jku.sea.cloud.exceptions.ToolDoesNotExistException;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -37,9 +36,8 @@ public class FxVisualizer extends Application {
 			Platform.exit();
 			return;
 		}
-		Project project = conn.getProjects().iterator().next();
 		
-		LinkQuery linkQuery = new LinkQuery(conn, project);
+		LinkQuery linkQuery = new LinkQuery(conn);
 		try {
 			FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("JFxVisualizer.fxml"));
             Parent root = (Parent)fxmlLoader.load();
