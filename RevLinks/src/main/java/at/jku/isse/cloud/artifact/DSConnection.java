@@ -311,10 +311,8 @@ public class DSConnection {
 		if(parent == null) {
 			return Collections.emptyList();
 		}
-		// Get package with matching name and parent package
-		return parent.getArtifacts().stream()
-				.filter(a -> a.getType().getId() == type.artifact.getId())
-				.collect(Collectors.toList());
+		Predicate<Artifact> isOfCorrectType = queryFactory.predicateProvider().hasType(Contexts.of(PATH), type.artifact);
+		return queryFactory.streamProvider().of(parent.getArtifacts()).filter("", isOfCorrectType).toList();
 	}
 	
 	/**
