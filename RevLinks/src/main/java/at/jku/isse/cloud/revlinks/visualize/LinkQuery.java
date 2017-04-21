@@ -33,7 +33,7 @@ public class LinkQuery {
 	private final NavigatorProvider navigatorProvider;
 
 	/**
-	 * Creates a LinkQuery object for the given Design Space connection and project.
+	 * Creates a LinkQuery object for the given Design Space connection.
 	 * @param conn the Design Space connection
 	 */
 	public LinkQuery(DSConnection conn) {

@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
 import at.jku.sea.cloud.Artifact;
 import at.jku.sea.cloud.Cloud;
 import at.jku.sea.cloud.CollectionArtifact;
@@ -377,6 +375,11 @@ public class DSConnection {
 		artifact.setPropertyValue(ws, propertyKey, value);
 	}
 
+	/**
+	 * Adds a long value to a collection artifact.
+	 * @param collArtifact the collection artifact to which the long value is added to
+	 * @param id the value to be added
+	 */
 	public void addValueToCollection(CollectionArtifact collArtifact, long id) {
 		collArtifact.addElement(ws, id);
 	}
